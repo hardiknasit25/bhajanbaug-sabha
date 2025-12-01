@@ -25,10 +25,9 @@ export default function Members() {
     <LayoutWrapper
       headerConfigs={{
         title: "Members",
-        iconName: "UsersRound",
       }}
     >
-      <div className="flex flex-col">
+      <div className="w-full flex flex-col">
         {members.map((member) => (
           <MemberListCard
             key={member.smk_no}

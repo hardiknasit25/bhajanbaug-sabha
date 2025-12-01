@@ -8,15 +8,15 @@ export default function Events() {
     <LayoutWrapper
       headerConfigs={{
         title: "Events",
-        iconName: "Calendar",
         children: (
           <Link to="/events/create-event">
             <CirclePlus size={20} />
           </Link>
         ),
       }}
+      className="p-4"
     >
-      <div className="p-4 grid grid-cols-1 gap-2">
+      <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 15 }).map((_, index) => (
           <EventCard key={index} />
         ))}

@@ -10,7 +10,12 @@ export function meta({}: MetaArgs) {
 
 export default function Report() {
   return (
-    <LayoutWrapper>
+    <LayoutWrapper
+      headerConfigs={{
+        title: "Report",
+      }}
+      className="p-4"
+    >
       <div>Report Screen</div>
     </LayoutWrapper>
   );
