@@ -66,7 +66,6 @@ function EventForm() {
           placeholder="Enter sabha name"
           className="w-full"
         />
-
         <SelectController
           name="date"
           control={control}
@@ -75,7 +74,6 @@ function EventForm() {
           options={dateOptions}
           className="w-full"
         />
-
         <TextAreaController
           name="description"
           control={control}
@@ -84,7 +82,6 @@ function EventForm() {
           rows={4}
           className="w-full"
         />
-
         <div className="flex gap-4 pt-4">
           <button
             type="button"

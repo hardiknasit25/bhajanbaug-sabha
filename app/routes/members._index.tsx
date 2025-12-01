@@ -1,7 +1,9 @@
-import type { MetaArgs } from "react-router";
+import { CirclePlus } from "lucide-react";
+import { Link, type MetaArgs } from "react-router";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { useMembers } from "~/hooks/useMembers";
+import type { MemberStatus } from "~/types/members.interface";
 
 export function meta({}: MetaArgs) {
   return [
@@ -13,10 +15,7 @@ export function meta({}: MetaArgs) {
 export default function Members() {
   const { members, loading, error, updateStatus } = useMembers();
 
-  const handleStatusChange = (
-    smkNo: string,
-    status: "present" | "late" | "absent" | "excused"
-  ) => {
+  const handleStatusChange = (smkNo: string, status: MemberStatus) => {
     updateStatus(smkNo, status);
     console.log(`Member ${smkNo} status changed to ${status}`);
   };
@@ -25,6 +24,11 @@ export default function Members() {
     <LayoutWrapper
       headerConfigs={{
         title: "Members",
+        children: (
+          <Link to="/members/create-member">
+            <CirclePlus size={20} />
+          </Link>
+        ),
       }}
     >
       <div className="w-full flex flex-col">
@@ -36,7 +40,7 @@ export default function Members() {
             imageApiUrl={member.img}
             status={member.status}
             onStatusAction={(status) =>
-              handleStatusChange(member.smk_no, status)
+              handleStatusChange(member.smk_no, status as MemberStatus)
             }
           />
         ))}

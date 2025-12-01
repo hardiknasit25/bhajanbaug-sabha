@@ -7,7 +7,7 @@ function MemberListCard({
   name,
   smkId,
   imageApiUrl,
-  status = "pending",
+  status = "present",
   onStatusAction,
 }: {
   name: string;
