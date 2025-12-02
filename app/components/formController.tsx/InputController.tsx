@@ -36,7 +36,7 @@ function InputController<T extends FieldValues>({
           {label && (
             <label
               htmlFor={name}
-              className="text-base font-medium text-textColor leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm font-medium text-textColor leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               {label}
               {required && <span className="text-errorColor ml-1">*</span>}
@@ -48,7 +48,7 @@ function InputController<T extends FieldValues>({
             type={type}
             placeholder={placeholder}
             disabled={disabled}
-            className={`flex w-full rounded-sm border bg-white p-2 text-sm text-textColor outline-none uppercase ${
+            className={`flex w-full rounded-md border bg-white p-2 text-sm text-textColor outline-none ${
               error ? "border-deleteBorderColor" : "border-borderColor"
             } ${className || ""}`}
           />

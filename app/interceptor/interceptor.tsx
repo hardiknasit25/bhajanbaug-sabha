@@ -5,10 +5,9 @@ import axios, {
 } from "axios";
 import { AUTH_TOKEN } from "~/constant/constant";
 import cookieService from "~/lib/cookie";
-import { localStorageService } from "~/lib/localStorage";
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.VITE_API_BASE_URL || "https://some-domain.com/api/",
+  baseURL: "https://some-domain.com/api/",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

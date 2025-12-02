@@ -4,6 +4,10 @@ module.exports = {
   content: ["./index.html", "./app/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        funnel: ["Funnel Display", "sans-serif"],
+        poppins : ["Poppins", "Funnel Display", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

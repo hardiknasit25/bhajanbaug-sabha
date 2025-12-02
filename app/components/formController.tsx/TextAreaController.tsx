@@ -45,7 +45,7 @@ function TextAreaController<T extends FieldValues>({
             rows={rows}
             placeholder={placeholder}
             disabled={disabled}
-            className={`flex w-full rounded-sm border bg-white p-2 text-sm text-textColor outline-none ${
+            className={`flex w-full rounded-md border bg-white p-2 text-sm text-textColor outline-none ${
               error ? "border-red-500" : "border-borderColor"
             } ${className || ""}`}
           />

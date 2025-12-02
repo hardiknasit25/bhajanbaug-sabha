@@ -46,7 +46,7 @@ function DatePickerController({
                 variant="default"
                 disabled={disabled}
                 className={cn(
-                  "flex w-full justify-between items-center !rounded-sm !p-2 text-sm text-textColor shadow-none font-normal !bg-white border border-borderColor",
+                  "flex w-full justify-between items-center !rounded-md !p-2 text-sm text-textColor shadow-none font-normal !bg-white border border-borderColor",
                   !value && "text-textLightColor",
                   error && "border-red-500"
                 )}
