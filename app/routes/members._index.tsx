@@ -2,6 +2,7 @@ import { CirclePlus } from "lucide-react";
 import { Link, type MetaArgs } from "react-router";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import MemberListCard from "~/components/shared-component/MemberListCard";
+import MemberSkeleton from "~/components/skeleton/MemberSkeleton";
 import { useMembers } from "~/hooks/useMembers";
 import type { MemberStatus } from "~/types/members.interface";
 import { Virtuoso } from "react-virtuoso";
@@ -34,37 +35,45 @@ export default function Members() {
       }}
     >
       <div className="w-full h-full">
-        <ClientOnly fallback={<div>Loading members...</div>}>
+        <ClientOnly
+          fallback={
+            <div className="">
+              {Array.from({ length: 10 }).map((_, index) => (
+                <MemberSkeleton key={index} />
+              ))}
+            </div>
+          }
+        >
           <Virtuoso
             style={{ height: "100%", width: "100%" }}
-            totalCount={200}
-            itemContent={(member, index) => (
-              <MemberListCard
-                key={member.smk_no}
-                name={member.name}
-                smkId={member.smk_no}
-                imageApiUrl={member.img}
-                status={member.status}
-                onStatusAction={(status) =>
-                  handleStatusChange(member.smk_no, status as MemberStatus)
-                }
-              />
-            )}
+            totalCount={members.length}
+            itemContent={(index) => {
+              const member = members[index];
+              return (
+                <MemberListCard
+                  key={member.smk_no}
+                  name={member.name}
+                  smkId={member.smk_no}
+                  imageApiUrl={member.img}
+                  status={member.status}
+                  onStatusAction={(status) =>
+                    handleStatusChange(member.smk_no, status as MemberStatus)
+                  }
+                />
+              );
+            }}
+            components={{
+              Footer: () => (
+                <div className="">
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <MemberSkeleton key={index} />
+                  ))}
+                </div>
+              ),
+            }}
             className="w-full h-full"
           />
         </ClientOnly>
-        {/* {members.map((member) => (
-          <MemberListCard
-            key={member.smk_no}
-            name={member.name}
-            smkId={member.smk_no}
-            imageApiUrl={member.img}
-            status={member.status}
-            onStatusAction={(status) =>
-              handleStatusChange(member.smk_no, status as MemberStatus)
-            }
-          />
-        ))} */}
       </div>
     </LayoutWrapper>
   );
