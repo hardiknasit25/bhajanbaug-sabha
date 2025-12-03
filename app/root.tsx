@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#ffffff" />
         <Meta />
         <Links />
@@ -58,15 +58,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .catch((err) => console.log("SW registration failed", err));
-    });
-  }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .catch((err) => console.log("SW registration failed", err));
+  });
+}
 
+export default function App() {
   return (
     <Sheet>
       <Provider store={store}>
