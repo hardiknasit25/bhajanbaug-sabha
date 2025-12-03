@@ -12,6 +12,7 @@ import type { Route } from "./+types/root";
 import { store } from "./store";
 import "./app.css";
 import { Sheet } from "./components/ui/sheet";
+import { useEffect } from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -58,15 +59,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .catch((err) => console.log("SW registration failed", err));
-  });
-}
-
 export default function App() {
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  }, []);
+
   return (
     <Sheet>
       <Provider store={store}>

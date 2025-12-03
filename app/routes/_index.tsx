@@ -5,7 +5,7 @@ import WishesCard from "~/components/shared-component/WishesCard";
 
 export function meta({}: MetaArgs) {
   return [
-    { title: "New React Router App" },
+    { title: "Bhajanbaug Sabha" },
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
