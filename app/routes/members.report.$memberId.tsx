@@ -1,12 +1,12 @@
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
 
-function MemberDetails() {
+function MemberReport() {
   return (
     <LayoutWrapper
       showTab={false}
       headerConfigs={{
-        title: "people",
+        title: "report",
         iconName: "ArrowLeft",
       }}
     >
@@ -16,4 +16,4 @@ function MemberDetails() {
   );
 }
 
-export default MemberDetails;
+export default MemberReport;

@@ -1,6 +1,6 @@
 import * as LucideIcons from "lucide-react";
 import type { ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { cn } from "~/lib/utils";
 import {
   Sheet,
@@ -39,13 +39,24 @@ function Header({
   onSearchChange,
   showSorting,
 }: HeaderProps) {
+  const navigate = useNavigate();
   const IconComponent = LucideIcons[iconName] as React.ComponentType<any>;
+
+  const handleIconClick = () => {
+    if (href) {
+      // normal navigation handled by Link
+      return;
+    }
+    navigate(-1); // go back
+  };
 
   // Icon element (wrapped in Link if href exists)
   const IconElement = href ? (
     <Link to={href}>
       <IconComponent size={20} />
     </Link>
+  ) : iconName ? (
+    <IconComponent size={20} onClick={handleIconClick} />
   ) : (
     <Sheet>
       <SheetTrigger asChild>

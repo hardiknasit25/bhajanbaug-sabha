@@ -21,7 +21,6 @@ function CreateMemberForm() {
       headerConfigs={{
         title: "Create Member",
         iconName: "ArrowLeft",
-        href: "/members",
       }}
       className="p-4"
     >

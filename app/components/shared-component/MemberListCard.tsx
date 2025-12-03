@@ -24,6 +24,7 @@ function MemberListCard({
       )}
       onClick={() => {
         if (from === "attendance") return;
+        else if (from === "report") navigate(`/members/report/${member.id}`);
         else navigate(`/members/details/${member.id}`);
       }}
     >

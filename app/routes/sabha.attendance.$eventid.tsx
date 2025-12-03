@@ -25,7 +25,6 @@ export default function EventAttendance() {
       headerConfigs={{
         title: "Attendance",
         iconName: "ArrowLeft",
-        href: "/sabha",
         children: (
           <div className="flex justify-end items-center gap-2">
             <RotateCcw />

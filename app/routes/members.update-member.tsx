@@ -53,7 +53,6 @@ function MemberUpdateForm() {
         headerConfigs={{
           title: "Update Member",
           iconName: "ArrowLeft",
-          href: "/members",
         }}
         className="p-4"
       >

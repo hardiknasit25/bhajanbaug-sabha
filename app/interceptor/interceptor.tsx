@@ -6,8 +6,10 @@ import axios, {
 import { AUTH_TOKEN } from "~/constant/constant";
 import cookieService from "~/lib/cookie";
 
+const BASE_URL = "https://some-domain.com/api/";
+
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: "https://some-domain.com/api/",
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
