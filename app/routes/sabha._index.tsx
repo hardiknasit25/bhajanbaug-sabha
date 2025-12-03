@@ -17,7 +17,7 @@ export default function Sabha() {
       }}
     >
       <Tabs defaultValue="upcoming-sabha" className="w-full">
-        <TabsList className="w-full bg-primaryColor rounded-none justify-evenly h-10 pb-4">
+        <TabsList className="w-full bg-primaryColor rounded-none justify-evenly h-10 pb-2">
           <TabsTrigger value="upcoming-sabha">Upcoming Sabha</TabsTrigger>
           <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
         </TabsList>

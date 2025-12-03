@@ -3,6 +3,7 @@ import type { HeaderProps } from "./Header";
 import Header from "./Header";
 import Tab from "./Tab";
 import { cn } from "~/lib/utils";
+import { ClientOnly } from "./ClientOnly";
 
 function LayoutWrapper({
   children,

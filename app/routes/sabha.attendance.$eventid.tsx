@@ -21,6 +21,7 @@ export default function EventAttendance() {
 
   return (
     <LayoutWrapper
+      showTab={false}
       headerConfigs={{
         title: "Attendance",
         iconName: "ArrowLeft",

@@ -2,13 +2,14 @@ import { ChartColumn, Check, Percent, X } from "lucide-react";
 import type { MemberData } from "~/types/members.interface";
 import ImageComponent from "./ImageComponent";
 import { useNavigate } from "react-router";
+import { cn } from "~/lib/utils";
 
 function MemberListCard({
   member,
   from,
 }: {
   member: MemberData;
-  from: "attendance" | "members";
+  from: "attendance" | "members" | "report";
 }) {
   const navigate = useNavigate();
   const handleStatusAction = (status: string) => {
@@ -17,7 +18,10 @@ function MemberListCard({
 
   return (
     <div
-      className="flex justify-center items-start gap-2 border border-borderColor/20 p-2 transition-all"
+      className={cn(
+        "flex justify-center gap-2 border border-borderColor/20 p-2 transition-all",
+        from === "members" ? "items-center" : "items-start"
+      )}
       onClick={() => {
         if (from === "attendance") return;
         else navigate(`/members/details/${member.id}`);
@@ -29,7 +33,7 @@ function MemberListCard({
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-1 flex-col justify-between items-start">
+      <div className={cn("flex flex-1 flex-col justify-between items-start")}>
         {/* Name */}
         <h3 className="text-sm font-bold text-textColor capitalize">{`${member.first_name} ${member.middle_name} ${member.last_name}`}</h3>
 
@@ -81,7 +85,7 @@ function MemberListCard({
           </div>
         )}
 
-        {from === "members" && (
+        {from === "report" && (
           <div className="w-full flex justify-start items-center mt-1">
             <div className="flex justify-start items-center gap-2 border-r border-r-borderColor pr-4">
               <p className="bg-green-200 size-5 flex justify-center items-center text-xs rounded-full text-greenTextColor">
