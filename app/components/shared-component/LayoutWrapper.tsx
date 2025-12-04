@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
+import { cn } from "~/lib/utils";
+import { InstallPWA } from "../InstallPWA";
 import type { HeaderProps } from "./Header";
 import Header from "./Header";
 import Tab from "./Tab";
-import { cn } from "~/lib/utils";
-import { ClientOnly } from "./ClientOnly";
 
 function LayoutWrapper({
   children,
@@ -20,6 +20,7 @@ function LayoutWrapper({
 }) {
   return (
     <div className="relative h-dvh w-full flex flex-col overflow-hidden">
+      <InstallPWA />
       {/* Header */}
       {showHeader && headerConfigs && (
         <div className="sticky top-0 right-0 z-10 flex-shrink-0">
