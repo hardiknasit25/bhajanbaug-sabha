@@ -89,36 +89,32 @@ export const InstallPWA = () => {
   const isFallback = showFallback && !deferredPrompt;
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-4 animate-in slide-in-from-bottom-2 md:bottom-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Download className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">
-              Install Bhajanbaug Sabha App
-            </h3>
-            <p className="text-sm text-gray-600">
-              {isFallback
-                ? "Use your browser menu to install"
-                : "Add to home screen for quick access"}
-            </p>
-          </div>
+    <div className="fixed bottom-24 left-3 right-3 z-50 bg-primaryColor rounded-lg shadow-lg p-4 animate-in slide-in-from-bottom-2 md:bottom-4">
+      <div className="flex justify-between items-center gap-2">
+        <div className="space-y-1">
+          <h3 className="font-semibold text-sm text-white">
+            Install Bhajanbaug Sabha App
+          </h3>
+          <p className="text-xs text-textLightColor font-normal">
+            {isFallback
+              ? "Use your browser menu to install"
+              : "Add to home screen for quick access"}
+          </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           <Button
+            variant="default"
             onClick={isFallback ? handleFallbackInstall : handleInstallClick}
             size="sm"
-            className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+            className="bg-white hover:bg-white text-textColor"
           >
             {isFallback ? "Help" : "Install"}
           </Button>
           <Button
             onClick={handleDismiss}
-            variant="ghost"
+            variant="default"
             size="sm"
-            className="text-gray-400 hover:text-gray-600"
+            className="text-white bg-transparent"
           >
             <X className="w-4 h-4" />
           </Button>
