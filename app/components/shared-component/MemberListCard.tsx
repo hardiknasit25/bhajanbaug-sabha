@@ -36,7 +36,7 @@ function MemberListCard({
       {/* Content Section */}
       <div className={cn("flex flex-1 flex-col justify-between items-start")}>
         {/* Name */}
-        <h3 className="text-base font-semibold text-textColor capitalize font-baloobhai">{`${member.first_name} ${member.middle_name} ${member.last_name}`}</h3>
+        <h3 className="text-sm font-semibold text-textColor capitalize">{`${member.first_name} ${member.middle_name} ${member.last_name}`}</h3>
 
         {/* ID Section */}
         <p className="text-xs font-medium text-gray-400">

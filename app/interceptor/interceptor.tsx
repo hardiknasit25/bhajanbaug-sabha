@@ -6,7 +6,7 @@ import axios, {
 import { AUTH_TOKEN } from "~/constant/constant";
 import cookieService from "~/lib/cookie";
 
-const BASE_URL = "https://some-domain.com/api/";
+const BASE_URL = "http://172.17.0.49:6111/api/v1/";
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: BASE_URL,

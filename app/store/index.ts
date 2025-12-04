@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import memberReducer from "./slice/memberSlice";
+import sabhaReducer from "./slice/sabhaSlice";
 
 export const store = configureStore({
   reducer: {
     members: memberReducer,
+    sabha: sabhaReducer,
   },
 });
 
