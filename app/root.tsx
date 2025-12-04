@@ -12,7 +12,8 @@ import type { Route } from "./+types/root";
 import { store } from "./store";
 import "./app.css";
 import { Sheet } from "./components/ui/sheet";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
+import { installPWA, registerServiceWorker } from "./utils/pwa";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -60,11 +61,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js");
-    }
+  useLayoutEffect(() => {
+    registerServiceWorker();
+    installPWA();
   }, []);
+  // useEffect(() => {
+  //   if ("serviceWorker" in navigator) {
+  //     navigator.serviceWorker.register("/sw.js");
+  //   }
+  // }, []);
 
   return (
     <Sheet>
