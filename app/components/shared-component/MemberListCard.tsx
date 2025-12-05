@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { cn } from "~/lib/utils";
 import { Separator } from "../ui/separator";
 import { useSabha } from "~/hooks/useSabha";
+import type { SabhaData } from "~/types/sabha.interface";
 
 function MemberListCard({
   member,
@@ -13,7 +14,7 @@ function MemberListCard({
 }: {
   member: MemberData;
   from: "attendance" | "members" | "report";
-  selectedSabha?: number;
+  selectedSabha?: SabhaData | null;
 }) {
   const { presetAttendance, absentAttendance } = useSabha();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ function MemberListCard({
       if (member.is_present) return;
 
       // mark present
-      presetAttendance(Number(selectedSabha), member.id);
+      presetAttendance(Number(selectedSabha?.id), member.id);
       return;
     }
 
@@ -33,7 +34,7 @@ function MemberListCard({
       if (!member.is_present) return;
 
       // mark absent
-      absentAttendance(Number(selectedSabha), member.id);
+      absentAttendance(Number(selectedSabha?.id), member.id);
     }
   };
 
@@ -94,7 +95,7 @@ function MemberListCard({
               onClick={() => handleStatusAction("absent")}
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-full transition-transform",
-                !member?.is_present && "bg-red-500"
+                member?.is_present === false && "bg-red-500"
               )}
               aria-label="Mark Absent"
             >
@@ -102,7 +103,7 @@ function MemberListCard({
                 size={24}
                 className={cn(
                   "text-redTextColor",
-                  !member?.is_present && "text-white"
+                  member?.is_present === false && "text-white"
                 )}
               />
             </button>

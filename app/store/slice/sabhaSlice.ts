@@ -100,6 +100,20 @@ export const absentAttendance = createAsyncThunk(
   }
 );
 
+//#region start sabha by id
+export const startSabha = createAsyncThunk(
+  "sabha/startSabha",
+  async (sabhaId: number, { rejectWithValue }) => {
+    try {
+      console.log("sabhaId: ", sabhaId);
+      const response = await sabhaService.startSabha(sabhaId);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue("Failed to start sabha");
+    }
+  }
+);
+
 // #region sabha slice
 const sabhaSlice = createSlice({
   name: "sabha",
@@ -156,8 +170,9 @@ const sabhaSlice = createSlice({
         ) => {
           state.selectedSabha = action.payload.sabha;
           state.totalPresentOnSelectedSabha = action.payload.total_present;
-          state.totalAbsentOnSelectedSabha =
-            action?.payload?.users.length - action?.payload?.total_present || 0;
+          state.totalAbsentOnSelectedSabha = action?.payload?.users?.filter(
+            (u) => u.is_present === false
+          ).length;
           state.sabhaMembers = action.payload.users;
           state.loading = false;
         }
@@ -181,7 +196,10 @@ const sabhaSlice = createSlice({
         if (index !== -1 && !state.sabhaMembers[index].is_present) {
           state.sabhaMembers[index].is_present = true;
           state.totalPresentOnSelectedSabha += 1;
-          state.totalAbsentOnSelectedSabha -= 1;
+          state.totalAbsentOnSelectedSabha =
+            state.totalAbsentOnSelectedSabha > 0
+              ? state.totalAbsentOnSelectedSabha - 1
+              : state.totalAbsentOnSelectedSabha;
         }
 
         state.loading = false;
@@ -204,13 +222,33 @@ const sabhaSlice = createSlice({
 
         if (index !== -1 && state.sabhaMembers[index].is_present) {
           state.sabhaMembers[index].is_present = false;
-          state.totalPresentOnSelectedSabha -= 1;
+          state.totalPresentOnSelectedSabha =
+            state.totalPresentOnSelectedSabha > 0
+              ? state.totalPresentOnSelectedSabha - 1
+              : state.totalPresentOnSelectedSabha;
           state.totalAbsentOnSelectedSabha += 1;
         }
 
         state.loading = false;
       })
       .addCase(absentAttendance.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    //#region start sabha
+    builder
+      .addCase(startSabha.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(startSabha.fulfilled, (state, action) => {
+        if (state.selectedSabha) {
+          state.selectedSabha.status = "running";
+        }
+        state.loading = false;
+      })
+      .addCase(startSabha.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

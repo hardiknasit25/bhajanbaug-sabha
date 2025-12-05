@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
 
   SABHA: {
     BASE: "sabha",
+    START_SABHA: "sabha/start",
     CREATE_EVENT: "create-event",
     UPDATE_EVENT: "update-event",
     ATTENDANCE_PRESENT: "attendance/present",

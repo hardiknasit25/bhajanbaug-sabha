@@ -1,16 +1,30 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { cn } from "~/lib/utils";
 import type { SabhaData } from "~/types/sabha.interface";
 import CircularProgress from "./CircularProgress";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { useSabha } from "~/hooks/useSabha";
 
 function EventCard({ sabha }: { sabha: SabhaData }) {
-  console.log("sabha: ", sabha);
+  const navigate = useNavigate();
   const status = sabha?.status;
   const totalPresents = sabha?.total_present ?? 0;
   const totalUsers = sabha?.total_users ?? 0;
   const totalAbsents = totalUsers - totalPresents;
   const attendancePercentage =
     totalUsers > 0 ? Math.round((totalPresents / totalUsers) * 100) : 0;
+  const { startSabha } = useSabha();
+
+  const [open, setOpen] = useState(false);
   return (
     <div
       className={cn(
@@ -30,8 +44,13 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
         </div>
 
         {/* Start Button */}
-        <Link
-          to={`/sabha/attendance/${sabha?.id}`}
+        <button
+          onClick={() => {
+            if (status === "completed" || status === "running") {
+              return navigate(`/sabha/attendance/${sabha.id}`);
+            }
+            setOpen(true);
+          }}
           className={cn(
             "block px-5 py-2 text-sm text-white font-medium rounded-full",
             status === "upcoming" && "bg-blue-500",
@@ -44,7 +63,7 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
             : status === "running"
               ? "Join"
               : "Completed"}
-        </Link>
+        </button>
       </div>
 
       {status === "completed" && (
@@ -68,6 +87,36 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
           </div>
         </div>
       )}
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {status === "upcoming" ? "Start Sabha?" : "Join Sabha?"}
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to{" "}
+              {status === "upcoming" ? "start" : "join"} this sabha?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-row justify-center items-center gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+
+            <Button
+              onClick={() => {
+                startSabha(sabha.id); // ⬅ wait for API
+                setOpen(false);
+                navigate(`/sabha/attendance/${sabha.id}`);
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -69,4 +69,20 @@ export const sabhaService = {
       throw error;
     }
   },
+
+  //#region start sabha by id
+  startSabha: async (sabhaId: number) => {
+    try {
+      console.log("sabhaId", sabhaId);
+      const response = await axiosInstance.put(
+        `${API_ENDPOINTS.SABHA.START_SABHA}/${sabhaId}`,
+        {
+          sabha_date: new Date().toISOString(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

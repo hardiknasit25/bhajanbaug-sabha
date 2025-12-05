@@ -35,10 +35,12 @@ export default function EventAttendance() {
   const { sabhaId } = useLoaderData();
   const {
     loading,
+    selectedSabha,
     sabhaMembers,
     filteredSabhaMembers,
     searchText,
     totalPresentOnSelectedSabha,
+    totalAbsentOnSelectedSabha,
     fetchSabhaById,
     setSabhaMemberSearchText,
   } = useSabha();
@@ -87,7 +89,9 @@ export default function EventAttendance() {
         </div>
         <div className="flex flex-col justify-center items-center gap-1">
           <span className="text-3xl text-red-500 font-medium font-poppins">
-            {sabhaMembers?.length - totalPresentOnSelectedSabha}
+            {selectedSabha?.status !== "completed"
+              ? totalAbsentOnSelectedSabha
+              : sabhaMembers?.length - totalPresentOnSelectedSabha}
           </span>
           <span className="text-base text-textColor font-medium font-poppins">
             Absent
@@ -106,7 +110,7 @@ export default function EventAttendance() {
                 key={member.smk_no}
                 member={member}
                 from={"attendance"}
-                selectedSabha={sabhaId}
+                selectedSabha={selectedSabha}
               />
             );
           }}
