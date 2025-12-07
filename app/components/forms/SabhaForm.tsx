@@ -1,22 +1,21 @@
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "../ui/dialog";
-import { Button } from "../ui/button";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 import InputController from "../formController.tsx/InputController";
 import SubmitButton from "../shared-component/SubmitButton";
 
-import { useNavigate } from "react-router";
-import { useState } from "react";
 import { useSabha } from "~/hooks/useSabha";
+import { useEffect } from "react";
 
 // Zod Schema
 const sabhaFormSchema = z.object({
@@ -28,6 +27,7 @@ type SabhaFormData = z.infer<typeof sabhaFormSchema>;
 export default function SabhaFormDialog() {
   const { selectedSabha, sabhaFormDialog, closeSabhaFormDailog, createSabha } =
     useSabha();
+  console.log("selectedSabha: ", selectedSabha);
 
   const DEFAULT_NAME = "Yuva Sabha";
 
@@ -56,9 +56,17 @@ export default function SabhaFormDialog() {
   };
 
   const handleCancel = () => {
-    reset();
+    reset({
+      sabhaName: DEFAULT_NAME,
+    });
     closeSabhaFormDailog();
   };
+
+  useEffect(() => {
+    if (selectedSabha) {
+      setValue("sabhaName", selectedSabha?.title);
+    }
+  }, [selectedSabha]);
 
   return (
     <Dialog open={sabhaFormDialog} onOpenChange={handleCancel}>

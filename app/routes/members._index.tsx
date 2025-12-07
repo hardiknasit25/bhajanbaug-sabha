@@ -123,12 +123,13 @@ export default function Members() {
               }}
               components={{
                 Footer: () => {
-                  return loading ? null : filteredMembers.length >=
-                    totalMembers ? null : filteredMembers.length === 0 ? (
-                    <div className="text-center mt-2 text-textLightColor">
-                      No members found
-                    </div>
-                  ) : null;
+                  return (
+                    filteredMembers.length === 0 && (
+                      <div className="text-center mt-2 text-textLightColor">
+                        No members found
+                      </div>
+                    )
+                  );
                 },
               }}
             />

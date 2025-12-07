@@ -46,7 +46,7 @@ export default function Report() {
         onValueChange={(val) => setActiveTab(val as ReportTabs)}
         className="w-full h-full flex flex-col justify-start"
       >
-        <TabsList className="w-full bg-primaryColor rounded-none justify-evenly h-10 pb-2">
+        <TabsList className="w-full flex justify-between items-center bg-primaryColor rounded-none h-10 pb-2">
           <TabsTrigger value="all-members">All Members</TabsTrigger>
           <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
           <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>

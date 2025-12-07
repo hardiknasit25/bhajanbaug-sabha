@@ -87,23 +87,19 @@ export default function Sabha() {
           <TabsTrigger value="upcoming-sabha">Upcoming Sabha</TabsTrigger>
           <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
         </TabsList>
-        <TabsContent value="upcoming-sabha" className="h-full w-full px-4">
+        <TabsContent value="upcoming-sabha" className="flex-1 px-4">
           {sabhaLoading ? (
             <LoadingSpinner />
           ) : (
             <Virtuoso
-              // totalCount={totalSabha}
+              totalCount={sabhaList.length}
               data={sabhaList}
               endReached={handleEndReached}
               itemContent={(index, sabha) => {
                 return (
                   <div
                     key={sabha?.id}
-                    className={cn(
-                      "w-full mb-4",
-                      index === 0 && "pt-4",
-                      index === sabhaList.length && "pb-4"
-                    )}
+                    className={cn("w-full mb-4", index === 0 && "pt-4")}
                   >
                     <EventCard sabha={sabha} />
                   </div>
@@ -111,13 +107,16 @@ export default function Sabha() {
               }}
               components={{
                 Footer: () => {
-                  return loading ? null : sabhaList.length >=
-                    totalSabha ? null : sabhaList.length === 0 ? (
-                    <div>No sabha found</div>
-                  ) : null;
+                  return (
+                    sabhaList.length === 0 && (
+                      <div className="text-center mt-2 text-textLightColor">
+                        No sabha found
+                      </div>
+                    )
+                  );
                 },
               }}
-              className="h-full w-full"
+              className="scrollbar-none"
             />
           )}
         </TabsContent>
