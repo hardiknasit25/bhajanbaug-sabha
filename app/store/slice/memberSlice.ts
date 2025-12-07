@@ -11,6 +11,7 @@ import { filterMembers } from "~/utils/filterMembers";
 
 interface MemberState {
   members: MemberData[];
+  selectedMember: MemberData | null;
   totalMembers: number;
   loading: boolean;
   error: string | null;
@@ -19,6 +20,7 @@ interface MemberState {
 
 const initialState: MemberState = {
   members: [],
+  selectedMember: null,
   totalMembers: 0,
   loading: false,
   error: null,
@@ -31,6 +33,19 @@ export const fetchMembers = createAsyncThunk(
   async (params: CommonParams, { rejectWithValue }) => {
     try {
       const response = await memberService.getMembers(params);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+//#region fetch member by id
+export const fetchMemberById = createAsyncThunk(
+  "members/fetchMemberById",
+  async (memberId: number, { rejectWithValue }) => {
+    try {
+      const response = await memberService.getMemberById(memberId);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -96,6 +111,21 @@ const memberSlice = createSlice({
         state.totalMembers = action.payload.count;
       })
       .addCase(fetchMembers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    //#region fetchMemberById
+    builder
+      .addCase(fetchMemberById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMemberById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedMember = action.payload;
+      })
+      .addCase(fetchMemberById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

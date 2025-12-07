@@ -5,6 +5,7 @@ import {
   setMembers,
   setSearchText,
   selectFilteredMembers,
+  fetchMemberById,
 } from "~/store/slice/memberSlice";
 import type { CommonParams } from "~/types/common.interface";
 import { type MemberData } from "~/types/members.interface";
@@ -24,7 +25,7 @@ export const useMembers = () => {
 
   const thunks = {
     fetchMembers: (params: CommonParams) => dispatch(fetchMembers(params)),
-
+    fetchMemberById: (memberId: number) => dispatch(fetchMemberById(memberId)),
     createMember: (memberData: MemberData) => {
       dispatch(createMember(memberData));
     },

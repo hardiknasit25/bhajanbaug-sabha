@@ -1,13 +1,14 @@
 export interface MemberData {
   id: number;
+  role_id: number;
   first_name: string;
   middle_name: string;
   last_name: string;
   img: string;
-  email?: string;
+  email: string;
   mobile: string;
-  role_id: number;
-  birth_day?: string | Date;
+  password: string | null;
+  birth_day?: string;
   satsang_day?: string;
   mulgam?: string;
   smk_no?: string;
@@ -24,6 +25,8 @@ export interface MemberData {
   group_id?: number[];
   attendance_id?: number;
   is_present?: boolean;
+  total_sabha: number;
+  total_present: number;
 }
 
 export interface PoshakGroupData {

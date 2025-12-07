@@ -20,7 +20,7 @@ export const memberService = {
   },
 
   //#region get member by id
-  getMemberById: async (memberId: string) => {
+  getMemberById: async (memberId: number) => {
     try {
       const response = await axiosInstance.get(
         `${API_ENDPOINTS.MEMBERS.BASE}/${memberId}`
