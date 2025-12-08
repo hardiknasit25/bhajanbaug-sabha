@@ -72,7 +72,7 @@ export default function EventAttendance() {
   });
 
   const fetchSabhaMembers = () => {
-    fetchSabhaById(Number(sabhaId), { page: 1, limit: 2000 });
+    fetchSabhaById(Number(sabhaId));
   };
 
   const checkPendingChanges = () => {

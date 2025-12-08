@@ -163,17 +163,20 @@ const sabhaSlice = createSlice({
     },
     doMemberPresent: (state, action: PayloadAction<number>) => {
       const userId = action.payload;
-      console.log("userId: ", userId);
 
       // 1. Find the user
       const findUser = state.sabhaMembers.find(
         (member) => member.id === userId
       );
-      console.log("findUser: ", findUser);
 
-      if (findUser) {
-        // 2. Update state
+      if (findUser && !findUser.is_present) {
+        // 2. Update state only if currently marked absent
         findUser.is_present = true;
+        state.totalPresentOnSelectedSabha += 1;
+        state.totalAbsentOnSelectedSabha = Math.max(
+          0,
+          state.totalAbsentOnSelectedSabha - 1
+        );
       }
     },
     doMemberAbsent: (state, action: PayloadAction<number>) => {
@@ -184,9 +187,17 @@ const sabhaSlice = createSlice({
         (member) => member.id === userId
       );
 
-      if (findUser) {
-        // 2. Update state
+      if (findUser && findUser.is_present !== false) {
+        // 2. Update state if currently marked present or not marked
+        if (findUser.is_present === true) {
+          // If was present, decrement present count
+          state.totalPresentOnSelectedSabha = Math.max(
+            0,
+            state.totalPresentOnSelectedSabha - 1
+          );
+        }
         findUser.is_present = false;
+        state.totalAbsentOnSelectedSabha += 1;
       }
     },
   },
