@@ -5,14 +5,9 @@ import type { MemberPayload } from "~/types/members.interface";
 
 export const memberService = {
   //#region get members
-  getMembers: async (params: CommonParams) => {
+  getMembers: async () => {
     try {
-      const response = await axiosInstance(API_ENDPOINTS.MEMBERS.BASE, {
-        params: {
-          page: params.page,
-          limit: params.limit,
-        },
-      });
+      const response = await axiosInstance(API_ENDPOINTS.MEMBERS.BASE);
       return response.data;
     } catch (error) {
       throw error;

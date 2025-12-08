@@ -2,12 +2,10 @@ import { CirclePlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, type MetaArgs } from "react-router";
 import { Virtuoso } from "react-virtuoso";
-import { ClientOnly } from "~/components/shared-component/ClientOnly";
 import GroupAccordionMember from "~/components/shared-component/GroupAccordionMember";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
-import MemberSkeleton from "~/components/skeleton/MemberSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useMembers } from "~/hooks/useMembers";
 
@@ -30,45 +28,14 @@ export default function Members() {
     fetchMembers,
     setSearchText,
   } = useMembers();
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
   //#region fetch member data
-  const fetchMembersListData = async (pageNum: number = page) => {
-    const data = await fetchMembers({
-      page: pageNum,
-      limit: 1000,
-    }).unwrap();
+  const fetchMembersListData = async () => {
+    const data = await fetchMembers().unwrap();
     return data.rows;
   };
 
-  const handleEndReached = async () => {
-    if (loading || !hasMore || filteredMembers.length >= totalMembers) return;
-    setLoading(true);
-
-    const nextPage = page + 1;
-    try {
-      const data = await fetchMembersListData(nextPage);
-      if (data && data.length > 0) {
-        setPage(nextPage);
-        if (filteredMembers.length + data.length >= totalMembers) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Error fetching more sabha:", error);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    setPage(1);
-    setHasMore(true);
     fetchMembersListData();
   }, [activeTab]);
 
@@ -110,7 +77,6 @@ export default function Members() {
           ) : (
             <Virtuoso
               totalCount={filteredMembers.length}
-              endReached={handleEndReached}
               itemContent={(index) => {
                 const member = filteredMembers[index];
                 return (

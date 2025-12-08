@@ -24,7 +24,7 @@ export const useMembers = () => {
   const methods = {};
 
   const thunks = {
-    fetchMembers: (params: CommonParams) => dispatch(fetchMembers(params)),
+    fetchMembers: () => dispatch(fetchMembers()),
     fetchMemberById: (memberId: number) => dispatch(fetchMemberById(memberId)),
     createMember: (memberData: MemberData) => {
       dispatch(createMember(memberData));

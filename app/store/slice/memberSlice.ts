@@ -30,9 +30,9 @@ const initialState: MemberState = {
 //#region fetch members
 export const fetchMembers = createAsyncThunk(
   "members/fetchMembers",
-  async (params: CommonParams, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await memberService.getMembers(params);
+      const response = await memberService.getMembers();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
