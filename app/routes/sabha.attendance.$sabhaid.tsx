@@ -61,6 +61,7 @@ export default function EventAttendance() {
     fetchSabhaById,
     setSabhaMemberSearchText,
     submitSabhaReport,
+    syncSabhaAttendance,
   } = useSabha();
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
@@ -93,7 +94,7 @@ export default function EventAttendance() {
   };
 
   const handleRefreshSabha = async () => {
-    await fetchSabhaMembers();
+    await syncSabhaAttendance(Number(sabhaId));
 
     localJsonStorageService.setItem(PRESENT_MEMBER, []);
     localJsonStorageService.setItem(ABSENT_MEMBER, []);

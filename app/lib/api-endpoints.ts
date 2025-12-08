@@ -15,5 +15,6 @@ export const API_ENDPOINTS = {
     ATTENDANCE_PRESENT: "attendance/present",
     ATTENDANCE_ABSENT: "attendance/absent",
     SUBMIT_SABHA_REPORT: "sabha/complete",
+    SYNC: "sabha/sync",
   },
 };

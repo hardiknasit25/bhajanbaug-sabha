@@ -1,6 +1,7 @@
+import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
 import axiosInstance from "~/interceptor/interceptor";
 import { API_ENDPOINTS } from "~/lib/api-endpoints";
-import type { CommonParams } from "~/types/common.interface";
+import { localJsonStorageService } from "~/lib/localStorage";
 
 export const sabhaService = {
   //#region get all sabhas
@@ -23,6 +24,24 @@ export const sabhaService = {
       const response = await axiosInstance.get(
         `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`
       );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  //#region sync sabha attendance by id
+  syncSabhaAttendance: async (sabhaId: number) => {
+    try {
+      const presentUserIds =
+        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+      const absentUserIds =
+        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+      const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.SYNC}`, {
+        sabha_id: sabhaId,
+        parent_user_id: presentUserIds,
+        absent_user_id: absentUserIds,
+      });
       return response.data;
     } catch (error) {
       throw error;

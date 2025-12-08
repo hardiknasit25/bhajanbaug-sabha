@@ -1,6 +1,5 @@
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
-  absentAttendance,
   closeSabhaFormDailog,
   createSabha,
   doMemberAbsent,
@@ -8,15 +7,14 @@ import {
   fetchSabhaById,
   fetchSabhaList,
   openSabhaFormDialog,
-  presetAttendance,
   selectFilteredSabhaMembers,
   setLoading,
   setSabhaList,
   setSabhaMemberSearchText,
   startSabha,
   submitSabhaReport,
+  syncSabhaAttendance,
 } from "~/store/slice/sabhaSlice";
-import type { CommonParams } from "~/types/common.interface";
 import type { SabhaData } from "~/types/sabha.interface";
 
 export const useSabha = () => {
@@ -40,10 +38,8 @@ export const useSabha = () => {
     fetchSabhaList: (sabha_status: string) =>
       dispatch(fetchSabhaList(sabha_status)),
     fetchSabhaById: (sabhaId: number) => dispatch(fetchSabhaById(sabhaId)),
-    presetAttendance: (sabhaId: number, userId: number) =>
-      dispatch(presetAttendance({ sabhaId, userId })),
-    absentAttendance: (sabhaId: number, userId: number) =>
-      dispatch(absentAttendance({ sabhaId, userId })),
+    syncSabhaAttendance: (sabhaId: number) =>
+      dispatch(syncSabhaAttendance(sabhaId)),
     startSabha: (sabhaId: number) => dispatch(startSabha(sabhaId)),
     submitSabhaReport: (sabhaId: number) =>
       dispatch(submitSabhaReport(sabhaId)),
