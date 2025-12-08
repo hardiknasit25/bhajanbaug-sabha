@@ -22,11 +22,11 @@ export default function Members() {
   const [activeTab, setActiveTab] = useState<MemberTabs>("all-members");
   const {
     filteredMembers,
-    totalMembers,
-    loading: memberLoading,
+    loading,
     searchText,
     fetchMembers,
     setSearchText,
+    fetchMembersByPoshakGroups,
   } = useMembers();
 
   //#region fetch member data
@@ -36,7 +36,11 @@ export default function Members() {
   };
 
   useEffect(() => {
-    fetchMembersListData();
+    if (activeTab === "all-members") {
+      fetchMembersListData();
+    } else {
+      fetchMembersByPoshakGroups();
+    }
   }, [activeTab]);
 
   // Handle search input change
@@ -72,7 +76,7 @@ export default function Members() {
           <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
         </TabsList>
         <TabsContent value="all-members" className="h-full w-full">
-          {memberLoading ? (
+          {loading ? (
             <LoadingSpinner />
           ) : (
             <Virtuoso
@@ -102,7 +106,11 @@ export default function Members() {
           )}
         </TabsContent>
         <TabsContent value="by-group" className="h-full w-full">
-          <GroupAccordionMember />
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <GroupAccordionMember from="members" />
+          )}
         </TabsContent>
       </Tabs>
     </LayoutWrapper>

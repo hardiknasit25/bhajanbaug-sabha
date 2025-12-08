@@ -61,6 +61,7 @@ export const fetchSabhaById = createAsyncThunk(
       return response.data as {
         sabha: SabhaData;
         total_present: number;
+        total_absent: number;
         users: MemberData[];
       };
     } catch (error) {
@@ -75,7 +76,11 @@ export const syncSabhaAttendance = createAsyncThunk(
   async (sabhaId: number, { rejectWithValue }) => {
     try {
       const response = await sabhaService.syncSabhaAttendance(sabhaId);
-      return response.data;
+      return response.data as {
+        total_present: number;
+        total_absent: number;
+        users: MemberData[];
+      };
     } catch (error) {
       return rejectWithValue("Failed to sync sabha attendance");
     }
@@ -220,76 +225,18 @@ const sabhaSlice = createSlice({
           action: PayloadAction<{
             sabha: SabhaData;
             total_present: number;
+            total_absent: number;
             users: MemberData[];
           }>
         ) => {
-          // Get localStorage arrays
-          const presentFromStorage =
-            localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-          const absentFromStorage =
-            localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-          // Update state from response
+          state.loading = false;
           state.selectedSabha = action.payload.sabha;
           state.sabhaMembers = action.payload.users;
-
-          // Sync localStorage with response data
-          let updatedPresentStorage = [...presentFromStorage];
-          let updatedAbsentStorage = [...absentFromStorage];
-
-          action.payload.users.forEach((user) => {
-            const userId = user.id;
-
-            // If is_present is null in response, use localStorage value
-            if (user.is_present === null || user.is_present === undefined) {
-              // Check if user was marked as present in localStorage
-              if (updatedPresentStorage.includes(userId)) {
-                user.is_present = true;
-              }
-              // Check if user was marked as absent in localStorage
-              else if (updatedAbsentStorage.includes(userId)) {
-                user.is_present = false;
-              }
-            } else {
-              // Response has a value (true or false), sync localStorage
-              if (user.is_present === true) {
-                // Add to present, remove from absent
-                if (!updatedPresentStorage.includes(userId)) {
-                  updatedPresentStorage.push(userId);
-                }
-                updatedAbsentStorage = updatedAbsentStorage.filter(
-                  (id) => id !== userId
-                );
-              } else if (user.is_present === false) {
-                // Add to absent, remove from present
-                if (!updatedAbsentStorage.includes(userId)) {
-                  updatedAbsentStorage.push(userId);
-                }
-                updatedPresentStorage = updatedPresentStorage.filter(
-                  (id) => id !== userId
-                );
-              }
-            }
-          });
-
-          // Update localStorage with synced data
-          localJsonStorageService.setItem(
-            PRESENT_MEMBER,
-            updatedPresentStorage
-          );
-          localJsonStorageService.setItem(ABSENT_MEMBER, updatedAbsentStorage);
-
-          // Calculate totals based on synced user data
-          state.totalPresentOnSelectedSabha = state.sabhaMembers.filter(
-            (u) => u.is_present === true
-          ).length;
-          state.totalAbsentOnSelectedSabha = state.sabhaMembers.filter(
-            (u) => u.is_present === false
-          ).length;
-
-          state.loading = false;
+          state.totalPresentOnSelectedSabha = action.payload.total_present;
+          state.totalAbsentOnSelectedSabha = action.payload.total_absent;
         }
       )
+
       .addCase(fetchSabhaById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -303,6 +250,9 @@ const sabhaSlice = createSlice({
       })
       .addCase(syncSabhaAttendance.fulfilled, (state, action) => {
         state.loading = false;
+        state.totalPresentOnSelectedSabha = action.payload.total_present;
+        state.totalAbsentOnSelectedSabha = action.payload.total_absent;
+        state.sabhaMembers = action.payload.users;
       })
       .addCase(syncSabhaAttendance.rejected, (state, action) => {
         state.loading = false;

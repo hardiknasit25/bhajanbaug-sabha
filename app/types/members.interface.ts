@@ -63,3 +63,19 @@ export interface MemberPayload {
 }
 
 export type MemberStatus = "present" | "absent";
+
+//#region Poshak Group Response Interface
+export interface PoshakGroupData {
+  group_id: number;
+  group_name: string;
+  group_type: string;
+  poshak_leader_id: number;
+  leader_details: {
+    user_id: number;
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    smk_no: string;
+  };
+  users: MemberData[];
+}

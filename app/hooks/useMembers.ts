@@ -6,6 +6,7 @@ import {
   setSearchText,
   selectFilteredMembers,
   fetchMemberById,
+  fetchMembersByPoshakGroups,
 } from "~/store/slice/memberSlice";
 import type { CommonParams } from "~/types/common.interface";
 import { type MemberData } from "~/types/members.interface";
@@ -26,6 +27,7 @@ export const useMembers = () => {
   const thunks = {
     fetchMembers: () => dispatch(fetchMembers()),
     fetchMemberById: (memberId: number) => dispatch(fetchMemberById(memberId)),
+    fetchMembersByPoshakGroups: () => dispatch(fetchMembersByPoshakGroups()),
     createMember: (memberData: MemberData) => {
       dispatch(createMember(memberData));
     },

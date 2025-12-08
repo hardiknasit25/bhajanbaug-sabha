@@ -26,6 +26,18 @@ export const memberService = {
     }
   },
 
+  //#region fetch members by poshak group
+  getMembersByPoshakGroup: async () => {
+    try {
+      const response = await axiosInstance.get(
+        `${API_ENDPOINTS.MEMBERS.BASE}/poshak-group`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   //#create member
   createMember: async (memberData: MemberPayload) => {
     try {

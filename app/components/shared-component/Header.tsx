@@ -24,6 +24,7 @@ export interface HeaderProps {
   searchPlaceholder?: string;
   onSearchChange?: (value: string) => void;
   showSorting?: boolean;
+  onBackClick?: () => void;
 }
 
 function Header({
@@ -38,6 +39,7 @@ function Header({
   searchPlaceholder,
   onSearchChange,
   showSorting,
+  onBackClick,
 }: HeaderProps) {
   const navigate = useNavigate();
   const IconComponent = LucideIcons[iconName] as React.ComponentType<any>;
@@ -47,7 +49,11 @@ function Header({
       // normal navigation handled by Link
       return;
     }
-    navigate(-1); // go back
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      navigate(-1); // go back
+    }
   };
 
   // Icon element (wrapped in Link if href exists)

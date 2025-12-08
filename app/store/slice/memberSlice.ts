@@ -6,11 +6,16 @@ import {
 import Fuse, { type IFuseOptions } from "fuse.js";
 import { memberService } from "~/services/memberService";
 import type { CommonParams } from "~/types/common.interface";
-import type { MemberData, MemberStatus } from "~/types/members.interface";
+import type {
+  MemberData,
+  MemberStatus,
+  PoshakGroupData,
+} from "~/types/members.interface";
 import { filterMembers } from "~/utils/filterMembers";
 
 interface MemberState {
   members: MemberData[];
+  membersByPoshakGroups: PoshakGroupData[];
   selectedMember: MemberData | null;
   totalMembers: number;
   loading: boolean;
@@ -20,6 +25,7 @@ interface MemberState {
 
 const initialState: MemberState = {
   members: [],
+  membersByPoshakGroups: [],
   selectedMember: null,
   totalMembers: 0,
   loading: false,
@@ -46,6 +52,19 @@ export const fetchMemberById = createAsyncThunk(
   async (memberId: number, { rejectWithValue }) => {
     try {
       const response = await memberService.getMemberById(memberId);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+//#region fetch members by poshak group
+export const fetchMembersByPoshakGroups = createAsyncThunk(
+  "members/fetchMembersByPoshakGroups",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await memberService.getMembersByPoshakGroup();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -126,6 +145,21 @@ const memberSlice = createSlice({
         state.selectedMember = action.payload;
       })
       .addCase(fetchMemberById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    //#region fetch members by poshak group
+    builder
+      .addCase(fetchMembersByPoshakGroups.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMembersByPoshakGroups.fulfilled, (state, action) => {
+        state.loading = false;
+        state.membersByPoshakGroups = action.payload;
+      })
+      .addCase(fetchMembersByPoshakGroups.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
