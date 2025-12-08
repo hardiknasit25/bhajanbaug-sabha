@@ -1,17 +1,41 @@
+import { useEffect } from "react";
+import { useLoaderData, type LoaderFunction } from "react-router";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
+import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
+import { useMembers } from "~/hooks/useMembers";
 
+export const loader: LoaderFunction = async ({ params }) => {
+  const { memberId } = params;
+
+  return {
+    memberId: memberId,
+  };
+};
 function MemberReport() {
+  const { memberId } = useLoaderData();
+  const { loading, selectedMember, fetchMemberById } = useMembers();
+
+  useEffect(() => {
+    fetchMemberById(memberId);
+  }, [memberId]);
+
   return (
     <LayoutWrapper
       showTab={false}
       headerConfigs={{
-        title: "report",
+        title: "people",
         iconName: "ArrowLeft",
       }}
     >
-      <MemberDetailInfo />
-      <div className="w-full flex flex-col justify-start items-center"></div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <>
+          <MemberDetailInfo />
+          <div className="w-full flex flex-col"></div>
+        </>
+      )}
     </LayoutWrapper>
   );
 }

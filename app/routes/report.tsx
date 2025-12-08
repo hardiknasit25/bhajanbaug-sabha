@@ -137,6 +137,7 @@ export default function Report() {
                   return sabhaList.length === 0 && <div>No sabha found</div>;
                 },
               }}
+              className="scrollbar-none"
             />
           )}
         </TabsContent>

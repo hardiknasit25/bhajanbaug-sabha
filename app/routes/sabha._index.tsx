@@ -64,7 +64,7 @@ export default function Sabha() {
           <TabsTrigger value="upcoming-sabha">Upcoming Sabha</TabsTrigger>
           <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
         </TabsList>
-        <TabsContent value="upcoming-sabha" className="flex-1 px-4">
+        <TabsContent value="upcoming-sabha" className="h-full w-full p-4">
           {sabhaLoading ? (
             <LoadingSpinner />
           ) : (
@@ -73,10 +73,7 @@ export default function Sabha() {
               data={sabhaList}
               itemContent={(index, sabha) => {
                 return (
-                  <div
-                    key={sabha?.id}
-                    className={cn("w-full mb-4", index === 0 && "pt-4")}
-                  >
+                  <div key={sabha?.id} className={cn("w-full mb-4")}>
                     <EventCard sabha={sabha} />
                   </div>
                 );
