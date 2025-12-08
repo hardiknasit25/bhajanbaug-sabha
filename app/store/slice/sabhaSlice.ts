@@ -39,10 +39,10 @@ const initialState: SabhaState = {
 //#region fetch sabha list
 export const fetchSabhaList = createAsyncThunk(
   "sabha/fetchSabhaList",
-  async (params: CommonParams, { rejectWithValue }) => {
+  async (sabha_status: string, { rejectWithValue }) => {
     try {
       // Here you can call your service to fetch sabha list
-      const response = await sabhaService.getSabhas(params);
+      const response = await sabhaService.getSabhas(sabha_status);
       return response.data as { rows: SabhaData[]; count: number };
     } catch (error) {
       return rejectWithValue("Failed to fetch sabha list");
@@ -53,12 +53,9 @@ export const fetchSabhaList = createAsyncThunk(
 //#regin fetch sabha by id
 export const fetchSabhaById = createAsyncThunk(
   "sabha/fetchSabhaById",
-  async (
-    { sabhaId, params }: { sabhaId: number; params: CommonParams },
-    { rejectWithValue }
-  ) => {
+  async (sabhaId: number, { rejectWithValue }) => {
     try {
-      const response = await sabhaService.getSabhaById(sabhaId, params);
+      const response = await sabhaService.getSabhaById(sabhaId);
       return response.data as {
         sabha: SabhaData;
         total_present: number;

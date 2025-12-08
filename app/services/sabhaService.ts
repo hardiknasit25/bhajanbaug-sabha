@@ -4,14 +4,11 @@ import type { CommonParams } from "~/types/common.interface";
 
 export const sabhaService = {
   //#region get all sabhas
-  getSabhas: async (params: CommonParams) => {
+  getSabhas: async (sabha_status: string) => {
     try {
-      const { page, limit, sabah_status } = params;
       const response = await axiosInstance.get(API_ENDPOINTS.SABHA.BASE, {
         params: {
-          page,
-          limit,
-          status: sabah_status,
+          status: sabha_status,
         },
       });
       return response.data;
@@ -21,16 +18,10 @@ export const sabhaService = {
   },
 
   //#region fetch sabha by id
-  getSabhaById: async (sabhaId: number, params: CommonParams) => {
+  getSabhaById: async (sabhaId: number) => {
     try {
       const response = await axiosInstance.get(
-        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`,
-        {
-          params: {
-            page: params.page,
-            limit: params.limit,
-          },
-        }
+        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`
       );
       return response.data;
     } catch (error) {

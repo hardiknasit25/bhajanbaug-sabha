@@ -37,9 +37,9 @@ export const useSabha = () => {
   };
 
   const thunks = {
-    fetchSabhaList: (params: CommonParams) => dispatch(fetchSabhaList(params)),
-    fetchSabhaById: (sabhaId: number, params: CommonParams) =>
-      dispatch(fetchSabhaById({ sabhaId, params })),
+    fetchSabhaList: (sabha_status: string) =>
+      dispatch(fetchSabhaList(sabha_status)),
+    fetchSabhaById: (sabhaId: number) => dispatch(fetchSabhaById(sabhaId)),
     presetAttendance: (sabhaId: number, userId: number) =>
       dispatch(presetAttendance({ sabhaId, userId })),
     absentAttendance: (sabhaId: number, userId: number) =>

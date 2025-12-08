@@ -22,46 +22,16 @@ export default function Sabha() {
     openSabhaFormDialog,
   } = useSabha();
   const [activeTab, setActiveTab] = useState<SabhaTabs>("upcoming-sabha");
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
 
-  const fetchSabhaListData = async (pageNum: number = page) => {
-    const data = await fetchSabhaList({
-      page: pageNum,
-      limit: 1000,
-      sabah_status: activeTab === "upcoming-sabha" ? "upcoming" : "completed",
-    }).unwrap();
+  const fetchSabhaListData = async () => {
+    const data = await fetchSabhaList(
+      activeTab === "upcoming-sabha" ? "upcoming" : "completed"
+    ).unwrap();
     return data.rows;
-  };
-
-  const handleEndReached = async () => {
-    if (loading || !hasMore || sabhaList.length >= totalSabha) return;
-    setLoading(true);
-
-    const nextPage = page + 1;
-    try {
-      const data = await fetchSabhaListData(nextPage);
-      if (data && data.length > 0) {
-        setPage(nextPage);
-        if (sabhaList.length + data.length >= totalSabha) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Error fetching more sabha:", error);
-      setHasMore(false);
-    } finally {
-      setLoading(false);
-    }
   };
 
   useEffect(() => {
     setSabhaList([]);
-    setPage(1);
-    setHasMore(true);
     fetchSabhaListData();
   }, [activeTab]);
 
@@ -94,7 +64,6 @@ export default function Sabha() {
             <Virtuoso
               totalCount={sabhaList.length}
               data={sabhaList}
-              endReached={handleEndReached}
               itemContent={(index, sabha) => {
                 return (
                   <div
@@ -127,7 +96,6 @@ export default function Sabha() {
             <Virtuoso
               totalCount={totalSabha}
               data={sabhaList}
-              endReached={handleEndReached}
               itemContent={(index, sabha) => {
                 return (
                   <div key={sabha?.id} className="w-full mb-4">
