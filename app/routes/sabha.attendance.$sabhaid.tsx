@@ -159,8 +159,9 @@ export default function EventAttendance() {
   }, [sabhaId]);
 
   useEffect(() => {
-    if (!hasPendingChanges) return;
-    console.log("hasPendingChanges: ", hasPendingChanges);
+    if (!hasPendingChanges) {
+      return;
+    }
 
     openDialog(
       "Unsynced Changes",
@@ -248,9 +249,12 @@ export default function EventAttendance() {
         title: "Attendance",
         iconName: "ArrowLeft",
         onBackClick: () => {
-          // if (hasPendingChanges) openUnsyncedDialog();
-          // else navigate(-1);
-          checkPendingChanges();
+          const hasPending = checkPendingChanges();
+          if (hasPending) {
+            openUnsyncedDialog();
+          } else {
+            navigate("/sabha");
+          }
         },
         children: (
           <div className="flex justify-end items-center gap-2">

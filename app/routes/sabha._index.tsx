@@ -109,7 +109,13 @@ export default function Sabha() {
               }}
               components={{
                 Footer: () => {
-                  return sabhaList.length === 0 && <div>No sabha found</div>;
+                  return (
+                    sabhaList.length === 0 && (
+                      <div className="text-center mt-2 text-textLightColor">
+                        No sabha found
+                      </div>
+                    )
+                  );
                 },
               }}
             />
