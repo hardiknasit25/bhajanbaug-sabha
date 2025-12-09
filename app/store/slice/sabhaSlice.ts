@@ -202,9 +202,9 @@ const sabhaSlice = createSlice({
           state,
           action: PayloadAction<{ rows: SabhaData[]; count: number }>
         ) => {
+          state.loading = false;
           state.sabhaList = [...state.sabhaList, ...action.payload.rows];
           state.totalSabha = action.payload.count;
-          state.loading = false;
         }
       )
       .addCase(fetchSabhaList.rejected, (state, action) => {

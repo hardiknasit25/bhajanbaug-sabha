@@ -189,4 +189,19 @@ export const selectFilteredMembers = (state: { members: MemberState }) => {
   return filterMembers(members, searchText);
 };
 
+export const selectFilteredMembersByPoshakGroups = (state: {
+  members: MemberState;
+}) => {
+  const { membersByPoshakGroups, searchText } = state.members;
+  if (!searchText?.trim()) return membersByPoshakGroups;
+
+  // Filter members within each group and keep groups that have matching members
+  return membersByPoshakGroups
+    .map((group) => ({
+      ...group,
+      users: filterMembers(group.users, searchText),
+    }))
+    .filter((group) => group.users.length > 0);
+};
+
 export default memberSlice.reducer;

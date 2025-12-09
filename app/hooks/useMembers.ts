@@ -5,6 +5,7 @@ import {
   setMembers,
   setSearchText,
   selectFilteredMembers,
+  selectFilteredMembersByPoshakGroups,
   fetchMemberById,
   fetchMembersByPoshakGroups,
 } from "~/store/slice/memberSlice";
@@ -15,6 +16,9 @@ export const useMembers = () => {
   const dispatch = useAppDispatch();
   const members = useAppSelector((state) => state.members);
   const filteredMembers = useAppSelector(selectFilteredMembers);
+  const filteredMembersByPoshakGroups = useAppSelector(
+    selectFilteredMembersByPoshakGroups
+  );
 
   const actions = {
     setAllMembers: (memberList: MemberData[]) =>
@@ -37,6 +41,7 @@ export const useMembers = () => {
     // stats
     ...members,
     filteredMembers,
+    filteredMembersByPoshakGroups,
 
     // actions
     ...actions,

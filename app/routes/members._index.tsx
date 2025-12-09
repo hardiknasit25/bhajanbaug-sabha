@@ -22,7 +22,7 @@ export default function Members() {
   const [activeTab, setActiveTab] = useState<MemberTabs>("all-members");
   const {
     filteredMembers,
-    membersByPoshakGroups,
+    filteredMembersByPoshakGroups,
     loading,
     searchText,
     fetchMembers,
@@ -109,9 +109,13 @@ export default function Members() {
         <TabsContent value="by-group" className="h-full w-full">
           {loading ? (
             <LoadingSpinner />
+          ) : filteredMembersByPoshakGroups.length === 0 ? (
+            <div className="text-center mt-2 text-textLightColor">
+              No members found
+            </div>
           ) : (
             <GroupAccordionMember
-              groupData={membersByPoshakGroups}
+              groupData={filteredMembersByPoshakGroups}
               from="members"
             />
           )}
