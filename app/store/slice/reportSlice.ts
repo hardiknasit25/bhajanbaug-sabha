@@ -3,7 +3,7 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { reportService } from "~/services/reportService";
+import { reportService, type filterType } from "~/services/reportService";
 import type { MemberData, PoshakGroupData } from "~/types/members.interface";
 import { filterMembers } from "~/utils/filterMembers";
 
@@ -26,9 +26,9 @@ const initialState: ReportState = {
 //#region fetchMemberReport thunk
 export const fetchMembersReport = createAsyncThunk(
   "report/fetchMembersReport",
-  async (_, { rejectWithValue }) => {
+  async (filter: filterType, { rejectWithValue }) => {
     try {
-      const response = await reportService.getMemberReport();
+      const response = await reportService.getMemberReport(filter);
       return response.data as {
         sabha_count: number;
         result: MemberData[];
@@ -42,9 +42,9 @@ export const fetchMembersReport = createAsyncThunk(
 //#region fetchGroupReport thunk
 export const fetchGroupReport = createAsyncThunk(
   "report/fetchGroupReport",
-  async (_, { rejectWithValue }) => {
+  async (filter: filterType, { rejectWithValue }) => {
     try {
-      const response = await reportService.getGroupReport();
+      const response = await reportService.getGroupReport(filter);
       return response.data as {
         sabha_count: number;
         groups: PoshakGroupData[];

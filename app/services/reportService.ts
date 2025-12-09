@@ -12,7 +12,7 @@ export type filterType =
 
 export const reportService = {
   //#region fetch member report
-  getMemberReport: async (filter: filterType = "lastSabha") => {
+  getMemberReport: async (filter: filterType) => {
     try {
       const response = await axiosInstance.get(
         API_ENDPOINTS.REPORT.MEMBER_REPORT,
@@ -30,7 +30,7 @@ export const reportService = {
   },
 
   //#region fetch group report
-  getGroupReport: async (filter: filterType = "lastSabha") => {
+  getGroupReport: async (filter: filterType) => {
     try {
       const response = await axiosInstance.get(
         `${API_ENDPOINTS.REPORT.GROUP_REPORT}`,

@@ -1,3 +1,4 @@
+import type { filterType } from "~/services/reportService";
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   fetchGroupReport,
@@ -16,8 +17,10 @@ export const useReport = () => {
   };
 
   const thunks = {
-    fetchMembersReport: () => dispatch(fetchMembersReport()),
-    fetchGroupReport: () => dispatch(fetchGroupReport()),
+    fetchMembersReport: (filter: filterType) =>
+      dispatch(fetchMembersReport(filter)),
+    fetchGroupReport: (filter: filterType) =>
+      dispatch(fetchGroupReport(filter)),
   };
 
   return {
