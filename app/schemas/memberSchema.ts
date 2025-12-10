@@ -10,11 +10,11 @@ export const userCreateSchema = z.object({
 
   // role_id: z.number(),
 
-  birth_day: z.union([z.string(), z.date()]).optional(),
+  birth_day: z.union([z.string(), z.date()]),
   satsang_day: z.string().optional(),
-  mulgam: z.string().optional(),
+  mulgam: z.string(),
   smk_no: z.string().optional(),
-  address: z.string().optional(),
+  address: z.string(),
 
   is_married: z.boolean().optional().default(false),
 
@@ -26,9 +26,9 @@ export const userCreateSchema = z.object({
   is_seva: z.boolean().optional().default(false),
   seva: z.string().optional(),
 
-  parichit_bhakt_name: z.string().optional(),
+  parichit_bhakt_name: z.string(),
 
-  group_id: z.array(z.number().int()).optional(),
+  group_id: z.array(z.number().int()),
 });
 
 export type UserCreateFormData = z.infer<typeof userCreateSchema>;

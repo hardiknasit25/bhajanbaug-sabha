@@ -59,7 +59,7 @@ export interface MemberPayload {
   address: string;
   is_married: boolean;
   is_job: boolean;
-  occupation: "job" | "study" | "business";
+  occupation?: "job" | "study" | "business";
   occupation_field?: string;
   is_family_leader: boolean;
   family_leader_id: number | null;

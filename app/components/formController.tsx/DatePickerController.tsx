@@ -40,7 +40,7 @@ function DatePickerController({
       render={({ field: { value, onChange }, fieldState: { error } }) => (
         <div className={`flex flex-col space-y-2 ${className || ""}`}>
           {label && (
-            <label className="text-base font-medium text-textColor">
+            <label className="text-sm font-medium text-textColor">
               {label}
               {required && <span className="text-red-500 ml-1">*</span>}
             </label>

@@ -61,7 +61,7 @@ function ChipController<T extends FieldValues>({
         };
 
         return (
-          <div className="space-y-1">
+          <div className="space-y-2">
             {label && (
               <label
                 htmlFor={name}

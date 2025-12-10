@@ -14,6 +14,7 @@ interface TextAreaControllerProps<T extends FieldValues> {
   className?: string;
   disabled?: boolean;
   rows?: number;
+  required?: boolean;
 }
 
 function TextAreaController<T extends FieldValues>({
@@ -24,6 +25,7 @@ function TextAreaController<T extends FieldValues>({
   className,
   disabled = false,
   rows = 4,
+  required = false,
 }: TextAreaControllerProps<T>) {
   return (
     <Controller
@@ -34,9 +36,10 @@ function TextAreaController<T extends FieldValues>({
           {label && (
             <label
               htmlFor={name}
-              className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              {label} :
+              {label}
+              {required && <span className="text-red-500"> *</span>}
             </label>
           )}
           <textarea

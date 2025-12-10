@@ -1,33 +1,24 @@
-import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
+import { useMembers } from "~/hooks/useMembers";
+import { cn } from "~/lib/utils";
 import {
   userCreateSchema,
   type UserCreateFormData,
 } from "~/schemas/memberSchema";
-import InputController from "../formController.tsx/InputController";
-import SelectController from "../formController.tsx/SelectController";
+import type { MemberPayload } from "~/types/members.interface";
 import ChipController from "../formController.tsx/ChipController";
 import DatePickerController from "../formController.tsx/DatePickerController";
-import TextAreaController from "../formController.tsx/TextAreaController";
-import SubmitButton from "../shared-component/SubmitButton";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { useMembers } from "~/hooks/useMembers";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { SelectLabel } from "@radix-ui/react-select";
+import InputController from "../formController.tsx/InputController";
 import MultiSelect from "../formController.tsx/MultiSelect";
+import TextAreaController from "../formController.tsx/TextAreaController";
+import ErrorMessage from "../shared-component/ErrorMessage";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 interface MemberFormProps {
   mode?: "create" | "update";
   initialData?: Partial<UserCreateFormData>;
-  onSubmit?: (data: UserCreateFormData) => void | Promise<void>;
 }
 
 const occupationOptions = [
@@ -52,17 +43,13 @@ const satsangDayOptions = [
   { value: "sunday", label: "Sunday" },
 ];
 
-function MemberForm({
-  mode = "create",
-  initialData,
-  onSubmit,
-}: MemberFormProps) {
-  const { groupSelect, fetchGroupSelect } = useMembers();
+function MemberForm({ mode = "create", initialData }: MemberFormProps) {
+  const { groupSelect, fetchGroupSelect, createMember } = useMembers();
 
   const {
     control,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm({
     resolver: zodResolver(userCreateSchema),
     defaultValues: {
@@ -87,21 +74,19 @@ function MemberForm({
     },
   }) as any;
 
-  const handleFormSubmit: SubmitHandler<any> = useCallback(
-    async (data: UserCreateFormData) => {
-      try {
-        console.log("Form submitted with data:", data);
-        if (onSubmit) {
-          await onSubmit(data);
-        } else {
-          console.log("No onSubmit handler provided");
-        }
-      } catch (error) {
-        console.error("Form submission error:", error);
-      }
-    },
-    [onSubmit]
-  );
+  const handleFormSubmit: SubmitHandler<any> = async (
+    data: UserCreateFormData
+  ) => {
+    const payload: MemberPayload = {
+      ...data,
+      is_job: data.occupation === "job",
+      family_leader_id: null,
+    };
+    console.log("payload: ", payload);
+    if (mode === "create") {
+      await createMember(payload);
+    }
+  };
 
   useEffect(() => {
     fetchGroupSelect();
@@ -144,6 +129,7 @@ function MemberForm({
           label="Email"
           type="email"
           placeholder="Enter email address"
+          required
         />
 
         <InputController
@@ -196,6 +182,7 @@ function MemberForm({
           control={control}
           label="Mulgam"
           placeholder="Enter mulgam"
+          required
         />
 
         <TextAreaController
@@ -204,27 +191,32 @@ function MemberForm({
           label="Address"
           placeholder="Enter full address"
           rows={3}
+          required
         />
 
         {/* poshak leader */}
         <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            Select Poshak Group Leader
+          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">
+            Select Poshak Group Leader{" "}
+            <span className="text-red-500 ml-1"> *</span>
           </label>
 
           <Controller
             name="group_id"
             control={control}
-            render={({ field }) => (
-              <MultiSelect
-                options={groupSelect.map((group) => ({
-                  value: String(group.id),
-                  label: group.leader_name,
-                }))}
-                value={field.value || []}
-                onChange={(val) => field.onChange(val)}
-                placeholder="Select group leaders"
-              />
+            render={({ field, fieldState: { error } }) => (
+              <>
+                <MultiSelect
+                  options={groupSelect.map((group) => ({
+                    value: String(group.id),
+                    label: group.leader_name,
+                  }))}
+                  value={(field.value || []).map(String)}
+                  onChange={(val) => field.onChange(val.map(Number))}
+                  placeholder="Select group leaders"
+                />
+                {error && <ErrorMessage error={error.message as string} />}
+              </>
             )}
           />
         </div>
@@ -232,55 +224,73 @@ function MemberForm({
         {/* Family Status Section */}
 
         <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            Married ?
+          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">
+            Married ? <span className="text-red-500 ml-1"> *</span>
           </label>
           <Controller
             name="is_married"
             control={control}
-            render={({ field }) => (
-              <RadioGroup
-                value={field.value}
-                onValueChange={field.onChange}
-                className="flex gap-4"
-              >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="yes" id="r1" />
-                  <label htmlFor="r1">Yes</label>
-                </div>
+            render={({ field, fieldState: { error } }) => (
+              <>
+                <RadioGroup
+                  value={
+                    field.value === true
+                      ? "yes"
+                      : field.value === false
+                        ? "no"
+                        : undefined
+                  }
+                  onValueChange={(val) => field.onChange(val === "yes")}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="yes" id="married-yes" />
+                    <label htmlFor="married-yes">Yes</label>
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="no" id="r2" />
-                  <label htmlFor="r2">No</label>
-                </div>
-              </RadioGroup>
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="no" id="married-no" />
+                    <label htmlFor="married-no">No</label>
+                  </div>
+                </RadioGroup>
+                {error && <ErrorMessage error={error.message as string} />}
+              </>
             )}
           />
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            Family Leader ?
+          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">
+            Family Leader ? <span className="text-red-500 ml-1"> *</span>
           </label>
           <Controller
             name="is_family_leader"
             control={control}
-            render={({ field }) => (
-              <RadioGroup
-                value={field.value}
-                onValueChange={field.onChange}
-                className="flex gap-4"
-              >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="yes" id="r1" />
-                  <label htmlFor="r1">Yes</label>
-                </div>
+            render={({ field, fieldState: { error } }) => (
+              <>
+                <RadioGroup
+                  value={
+                    field.value === true
+                      ? "yes"
+                      : field.value === false
+                        ? "no"
+                        : undefined
+                  }
+                  onValueChange={(val) => field.onChange(val === "yes")}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="yes" id="family-leader-yes" />
+                    <label htmlFor="family-leader-yes">Yes</label>
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="no" id="r2" />
-                  <label htmlFor="r2">No</label>
-                </div>
-              </RadioGroup>
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="no" id="family-leader-no" />
+                    <label htmlFor="family-leader-no">No</label>
+                  </div>
+                </RadioGroup>
+                {error && <ErrorMessage error={error.message as string} />}
+              </>
             )}
           />
         </div>
@@ -314,28 +324,37 @@ function MemberForm({
         {/* Seva Section */}
 
         <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            Seva ?
+          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">
+            Seva ? <span className="text-red-500 ml-1"> *</span>
           </label>
           <Controller
             name="is_seva"
             control={control}
-            render={({ field }) => (
-              <RadioGroup
-                value={field.value}
-                onValueChange={field.onChange}
-                className="flex gap-4"
-              >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="yes" id="r1" />
-                  <label htmlFor="r1">Yes</label>
-                </div>
+            render={({ field, fieldState: { error } }) => (
+              <>
+                <RadioGroup
+                  value={
+                    field.value === true
+                      ? "yes"
+                      : field.value === false
+                        ? "no"
+                        : undefined
+                  }
+                  onValueChange={(val) => field.onChange(val === "yes")}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="yes" id="seva-yes" />
+                    <label htmlFor="seva-yes">Yes</label>
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="no" id="r2" />
-                  <label htmlFor="r2">No</label>
-                </div>
-              </RadioGroup>
+                  <div className="flex items-center gap-3">
+                    <RadioGroupItem value="no" id="seva-no" />
+                    <label htmlFor="seva-no">No</label>
+                  </div>
+                </RadioGroup>
+                {error && <ErrorMessage error={error.message as string} />}
+              </>
             )}
           />
         </div>
@@ -357,13 +376,22 @@ function MemberForm({
 
         {/* Submit Button */}
         <div className="pt-4">
-          <SubmitButton
+          {/* <SubmitButton
+
             buttonText={mode === "create" ? "Create Member" : "Update Member"}
             loadingButtonText={
               mode === "create" ? "Creating..." : "Updating..."
             }
             loading={isSubmitting}
-          />
+          /> */}
+          <button
+            type="submit"
+            className={cn(
+              "w-full rounded-full bg-primaryColor text-white font-medium py-2 px-4 transition-colors duration-200"
+            )}
+          >
+            {mode === "create" ? "Create Member" : "Update Member"}
+          </button>
         </div>
       </form>
     </div>

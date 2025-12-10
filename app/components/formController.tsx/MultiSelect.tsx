@@ -49,15 +49,17 @@ export default function MultiSelect({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild className="w-full">
+      <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
-          className="w-full justify-between line-clamp-1"
+          className="w-full flex justify-between p-1.5 px-2"
         >
-          {selectedLabels.length > 0 ? selectedLabels : placeholder}
+          <span className="w-full font-normal line-clamp-1 flex justify-start items-start">
+            {selectedLabels.length > 0 ? selectedLabels : placeholder}
+          </span>
 
-          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+          <ChevronsUpDown className="ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
 

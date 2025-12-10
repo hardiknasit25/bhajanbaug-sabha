@@ -42,7 +42,7 @@ export const memberService = {
   createMember: async (memberData: MemberPayload) => {
     try {
       const response = await axiosInstance.post(
-        API_ENDPOINTS.MEMBERS.CREATE,
+        API_ENDPOINTS.MEMBERS.BASE,
         memberData
       );
       return response.data;

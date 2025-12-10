@@ -3,12 +3,11 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import Fuse, { type IFuseOptions } from "fuse.js";
 import { memberService } from "~/services/memberService";
 import type { CommonParams } from "~/types/common.interface";
 import type {
   MemberData,
-  MemberStatus,
+  MemberPayload,
   PoshakGroupData,
 } from "~/types/members.interface";
 import { filterMembers } from "~/utils/filterMembers";
@@ -77,7 +76,7 @@ export const fetchMembersByPoshakGroups = createAsyncThunk(
 //#region create member
 export const createMember = createAsyncThunk(
   "members/createMember",
-  async (memberData: MemberData, { rejectWithValue }) => {
+  async (memberData: MemberPayload, { rejectWithValue }) => {
     try {
       const response = await memberService.createMember(memberData);
       return response.data;

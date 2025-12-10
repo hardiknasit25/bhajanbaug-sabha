@@ -1,18 +1,17 @@
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   createMember,
-  fetchMembers,
-  setMembers,
-  setSearchText,
-  selectFilteredMembers,
-  selectFilteredMembersByPoshakGroups,
-  fetchMemberById,
-  fetchMembersByPoshakGroups,
   enterSabhaReason,
   fetchGroupSelect,
+  fetchMemberById,
+  fetchMembers,
+  fetchMembersByPoshakGroups,
+  selectFilteredMembers,
+  selectFilteredMembersByPoshakGroups,
+  setMembers,
+  setSearchText,
 } from "~/store/slice/memberSlice";
-import type { CommonParams } from "~/types/common.interface";
-import { type MemberData } from "~/types/members.interface";
+import { type MemberData, type MemberPayload } from "~/types/members.interface";
 
 export const useMembers = () => {
   const dispatch = useAppDispatch();
@@ -34,9 +33,8 @@ export const useMembers = () => {
     fetchMembers: () => dispatch(fetchMembers()),
     fetchMemberById: (memberId: number) => dispatch(fetchMemberById(memberId)),
     fetchMembersByPoshakGroups: () => dispatch(fetchMembersByPoshakGroups()),
-    createMember: (memberData: MemberData) => {
-      dispatch(createMember(memberData));
-    },
+    createMember: (memberData: MemberPayload) =>
+      dispatch(createMember(memberData)),
     enterSabhaReason: (sabha_id: number, user_id: number, reason: string) =>
       dispatch(enterSabhaReason({ sabha_id, user_id, reason })),
     fetchGroupSelect: () => dispatch(fetchGroupSelect()),

@@ -1,5 +1,6 @@
+import { ChartColumn, Edit } from "lucide-react";
 import { useEffect } from "react";
-import { useLoaderData, type LoaderFunction } from "react-router";
+import { useLoaderData, useNavigate, type LoaderFunction } from "react-router";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
@@ -15,6 +16,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 function MemberDetails() {
   const { memberId } = useLoaderData();
   const { loading, selectedMember, fetchMemberById } = useMembers();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMemberById(memberId);
@@ -26,6 +28,18 @@ function MemberDetails() {
       headerConfigs={{
         title: "people",
         iconName: "ArrowLeft",
+        children: (
+          <div className="flex justify-center items-center gap-4 pr-2">
+            <ChartColumn
+              size={18}
+              onClick={() => navigate(`/members/report/${memberId}`)}
+            />
+            <Edit
+              size={18}
+              onClick={() => navigate(`/members/update-member`)}
+            />
+          </div>
+        ),
       }}
     >
       {loading ? (
@@ -48,8 +62,11 @@ function MemberDetails() {
                   value: selectedMember?.satsang_day ?? null,
                 },
                 { title: "mulgam", value: selectedMember?.mulgam ?? null },
-                { title: "address", value: selectedMember?.address ?? null },
               ]}
+            />
+            <MemberDetail
+              title="Address"
+              details={[{ value: selectedMember?.address ?? null }]}
             />
             <MemberDetail
               title="Skills"
@@ -89,13 +106,15 @@ const MemberDetail = ({
   details,
 }: {
   title: string;
-  details: { title: string; value: string | null }[];
+  details: { title?: string; value: string | null }[];
 }) => {
   return (
     <div className="w-full flex flex-col justify-start">
-      <div className="w-full text-sm font-medium uppercase p-2 text-themeBlueColor">
-        {title}
-      </div>
+      {title && (
+        <div className="w-full text-sm font-medium uppercase p-2 text-themeBlueColor">
+          {title}
+        </div>
+      )}
       <div className="w-full flex flex-col justify-start items-start p-2 gap-2 bg-white border-t border-b border-borderColor">
         {details.map((detail) => {
           return (
