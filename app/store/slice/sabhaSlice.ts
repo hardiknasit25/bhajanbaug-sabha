@@ -173,14 +173,37 @@ const sabhaSlice = createSlice({
         (member) => member.id === userId
       );
 
-      if (findUser && !findUser.is_present) {
+      // 2. LocalStorage updates
+      let presentUsers =
+        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+
+      let absentUsers =
+        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+
+      // Add to present if not exists
+      if (!presentUsers.includes(userId)) {
+        presentUsers.push(userId);
+      }
+
+      // Remove from absent if exists
+      absentUsers = absentUsers.filter((u) => u !== userId);
+
+      // Save back
+      localJsonStorageService.setItem(PRESENT_MEMBER, presentUsers);
+      localJsonStorageService.setItem(ABSENT_MEMBER, absentUsers);
+
+      if (findUser) {
         // 2. Update state only if currently marked absent
-        findUser.is_present = true;
         state.totalPresentOnSelectedSabha += 1;
-        state.totalAbsentOnSelectedSabha = Math.max(
-          0,
-          state.totalAbsentOnSelectedSabha - 1
-        );
+
+        if (findUser.is_present === false) {
+          // If was absent, decrement absent count
+          state.totalAbsentOnSelectedSabha = Math.max(
+            0,
+            state.totalAbsentOnSelectedSabha - 1
+          );
+        }
+        findUser.is_present = true;
       }
     },
     doMemberAbsent: (state, action: PayloadAction<number>) => {
@@ -191,7 +214,26 @@ const sabhaSlice = createSlice({
         (member) => member.id === userId
       );
 
-      if (findUser && findUser.is_present !== false) {
+      // 2. LocalStorage updates
+      let absentUsers =
+        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+
+      let presentUsers =
+        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+
+      // Add to absent if not exists
+      if (!absentUsers.includes(userId)) {
+        absentUsers.push(userId);
+      }
+
+      // Remove from present if exists
+      presentUsers = presentUsers.filter((u) => u !== userId);
+
+      // Save back
+      localJsonStorageService.setItem(ABSENT_MEMBER, absentUsers);
+      localJsonStorageService.setItem(PRESENT_MEMBER, presentUsers);
+
+      if (findUser) {
         // 2. Update state if currently marked present or not marked
         if (findUser.is_present === true) {
           // If was present, decrement present count

@@ -119,39 +119,58 @@ export default function EventAttendance() {
     );
   };
 
-  const handleSubmitSabha = () => {
-    openDialog(
-      "Submit Attendance?",
-      "Are you sure you want to submit? You can't edit after submission.",
-      [
-        {
-          label: "Cancel",
-          variant: "outline",
-          action: () => setDialog((d) => ({ ...d, open: false })),
-        },
-        {
-          label: "Yes, Submit",
-          action: async () => {
-            setDialog((d) => ({ ...d, open: false }));
+  const handleSubmitSabha = async () => {
+    const hasPending = await checkPendingChanges();
 
-            const res = await submitSabhaReport(Number(sabhaId));
+    if (hasPending) {
+      openDialog(
+        "Unsaved Changes?",
+        "You have unsaved changes. Please sync them before submitting.",
+        [
+          {
+            label: "Sync Now",
+            action: async () => {
+              setDialog((d) => ({ ...d, open: false }));
 
-            if (res) {
-              openDialog(
-                "Submitted Successfully!",
-                "Attendance submission completed successfully.",
-                [
-                  {
-                    label: "OK",
-                    action: () => setDialog((d) => ({ ...d, open: false })),
-                  },
-                ]
-              );
-            }
+              handleRefreshSabha();
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    } else {
+      openDialog(
+        "Submit Attendance?",
+        "Are you sure you want to submit? You can't edit after submission.",
+        [
+          {
+            label: "Cancel",
+            variant: "outline",
+            action: () => setDialog((d) => ({ ...d, open: false })),
+          },
+          {
+            label: "Yes, Submit",
+            action: async () => {
+              setDialog((d) => ({ ...d, open: false }));
+
+              const res = await submitSabhaReport(Number(sabhaId));
+
+              if (res) {
+                openDialog(
+                  "Submitted Successfully!",
+                  "Attendance submission completed successfully.",
+                  [
+                    {
+                      label: "OK",
+                      action: () => setDialog((d) => ({ ...d, open: false })),
+                    },
+                  ]
+                );
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   useEffect(() => {

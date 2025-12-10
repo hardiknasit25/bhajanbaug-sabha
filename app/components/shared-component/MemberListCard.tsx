@@ -26,49 +26,11 @@ function MemberListCard({
   const handlePresentClick = (id: number) => {
     // 1. Update Redux
     doMemberPresent(id);
-
-    // 2. LocalStorage updates
-    let presentUsers =
-      localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-
-    let absentUsers =
-      localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-    // Add to present if not exists
-    if (!presentUsers.includes(id)) {
-      presentUsers.push(id);
-    }
-
-    // Remove from absent if exists
-    absentUsers = absentUsers.filter((u) => u !== id);
-
-    // Save back
-    localJsonStorageService.setItem(PRESENT_MEMBER, presentUsers);
-    localJsonStorageService.setItem(ABSENT_MEMBER, absentUsers);
   };
 
   const handleAbsentClick = (id: number) => {
     // 1. Update Redux
     doMemberAbsenent(id);
-
-    // 2. LocalStorage updates
-    let absentUsers =
-      localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
-
-    let presentUsers =
-      localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-
-    // Add to absent if not exists
-    if (!absentUsers.includes(id)) {
-      absentUsers.push(id);
-    }
-
-    // Remove from present if exists
-    presentUsers = presentUsers.filter((u) => u !== id);
-
-    // Save back
-    localJsonStorageService.setItem(ABSENT_MEMBER, absentUsers);
-    localJsonStorageService.setItem(PRESENT_MEMBER, presentUsers);
   };
 
   return (
