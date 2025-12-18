@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useMembers } from "~/hooks/useMembers";
 import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
+import axiosInstance from "~/interceptor/interceptor";
 import type { filterType } from "~/services/reportService";
 
 export function meta({}: MetaArgs) {
@@ -76,6 +77,48 @@ export default function Report() {
     setSearchParams(params);
   };
 
+  const handleDownLoadClick = async () => {
+    const filterParam = selectedFilter || "lastMonthAllSabha";
+    try {
+      let url = "";
+      let filename = "";
+      if (activeTab === "all-members") {
+        // Download all members report
+        const response = await axiosInstance.get(
+          `report/download/user?filter=${filterParam}`,
+          { responseType: "blob" }
+        );
+        url = window.URL.createObjectURL(new Blob([response.data]));
+        filename = "user_attendance_report.xlsx";
+      } else if (activeTab === "by-group") {
+        // Download group report
+        const response = await axiosInstance.get(
+          `report/download/group?filter=${filterParam}`,
+          { responseType: "blob" }
+        );
+        url = window.URL.createObjectURL(new Blob([response.data]));
+        filename = "group_attendance_report.xlsx";
+      } else if (activeTab === "completed-sabha") {
+        // Download completed sabha report
+        // (Implement as needed)
+      }
+      if (url && filename) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
+    } catch (error) {
+      // Optionally show error to user
+      throw error;
+    }
+  };
+
   // Sync with URL and call API
   useEffect(() => {
     const urlTab = (searchParams.get("tab") as ReportTabs) || "all-members";
@@ -99,13 +142,17 @@ export default function Report() {
       headerConfigs={{
         title: "Report",
         children: (
-          <div className="flex justify-center items-center gap-2">
-            <Download size={20} className="text-white" />
+          <div className="flex justify-center items-center gap-4 pr-3">
+            <Download
+              size={22}
+              className="text-white"
+              onClick={handleDownLoadClick}
+            />
 
             {/* Drawer For Filters */}
             <Drawer>
               <DrawerTrigger>
-                <EllipsisVertical size={20} className="text-white" />
+                <EllipsisVertical size={22} className="text-white" />
               </DrawerTrigger>
 
               <DrawerContent>

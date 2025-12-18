@@ -292,12 +292,12 @@ export default function EventAttendance() {
         title: "Attendance",
         iconName: "ArrowLeft",
         children: (
-          <div className="flex justify-end items-center gap-2">
+          <div className="flex justify-end items-center gap-4 pr-3">
             <div
               className="relative cursor-pointer"
               onClick={handleRefreshSabha}
             >
-              <RotateCcw />
+              <RotateCcw size={22} />
 
               {((
                 localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) ?? []
@@ -309,7 +309,11 @@ export default function EventAttendance() {
             </div>
 
             {selectedSabha?.status === "running" && (
-              <Send onClick={handleSubmitSabha} className="cursor-pointer" />
+              <Send
+                size={22}
+                onClick={handleSubmitSabha}
+                className="cursor-pointer"
+              />
             )}
           </div>
         ),
