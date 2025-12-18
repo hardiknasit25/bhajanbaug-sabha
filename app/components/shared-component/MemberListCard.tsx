@@ -61,7 +61,9 @@ function MemberListCard({
         <p className="text-xs font-medium text-gray-400">
           SMK ID:{" "}
           <span className="text-gray-600 font-semibold">
-            {member.smk_no !== null ? member.smk_no : "No SMK"}
+            {member.smk_no !== null && member.smk_no !== "NA"
+              ? member.smk_no
+              : "No SMK"}
           </span>
         </p>
 
