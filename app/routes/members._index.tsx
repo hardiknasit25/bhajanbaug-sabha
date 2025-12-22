@@ -1,6 +1,12 @@
 import { CirclePlus } from "lucide-react";
 import { useEffect } from "react";
-import { Link, type MetaArgs, useSearchParams } from "react-router";
+import {
+  Link,
+  type LoaderFunctionArgs,
+  type MetaArgs,
+  redirect,
+  useSearchParams,
+} from "react-router";
 import { Virtuoso } from "react-virtuoso";
 import GroupAccordionMember from "~/components/shared-component/GroupAccordionMember";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
@@ -8,6 +14,7 @@ import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useMembers } from "~/hooks/useMembers";
+import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
   return [
@@ -17,6 +24,16 @@ export function meta({}: MetaArgs) {
 }
 
 type MemberTabs = "all-members" | "by-group";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const token = getTokenFromRequest(request);
+
+  if (!token) {
+    return redirect("/login");
+  }
+
+  return null;
+};
 
 export default function Members() {
   const {

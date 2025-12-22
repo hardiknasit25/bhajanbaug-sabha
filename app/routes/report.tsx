@@ -1,30 +1,32 @@
 import { Download, EllipsisVertical } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSearchParams, type MetaArgs } from "react-router";
+import {
+  redirect,
+  useSearchParams,
+  type LoaderFunctionArgs,
+  type MetaArgs,
+} from "react-router";
 import { Virtuoso } from "react-virtuoso";
 import EventCard from "~/components/shared-component/EventCard";
 import GroupAccordionMember from "~/components/shared-component/GroupAccordionMember";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
-import { Button } from "~/components/ui/button";
 import { DialogClose } from "~/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "~/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { useMembers } from "~/hooks/useMembers";
 import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
 import axiosInstance from "~/interceptor/interceptor";
 import type { filterType } from "~/services/reportService";
+import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
   return [
@@ -32,6 +34,16 @@ export function meta({}: MetaArgs) {
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const token = getTokenFromRequest(request);
+
+  if (!token) {
+    return redirect("/login");
+  }
+
+  return null;
+};
 
 type ReportTabs = "all-members" | "by-group" | "completed-sabha";
 
@@ -67,6 +79,7 @@ export default function Report() {
     sabhaList,
     totalSabha,
     loading: sabhaLoading,
+    setSabhaList,
     fetchSabhaList,
   } = useSabha();
 
@@ -127,6 +140,7 @@ export default function Report() {
     setActiveTab(urlTab);
     setSelectedFilter(urlFilter);
     setSearchText("");
+    setSabhaList([]);
 
     if (urlTab === "all-members") {
       fetchMembersReport(urlFilter);

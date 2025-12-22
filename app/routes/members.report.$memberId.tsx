@@ -1,14 +1,21 @@
 import { Edit, SaveIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLoaderData, type LoaderFunction } from "react-router";
+import { redirect, useLoaderData, type LoaderFunction } from "react-router";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
 import { useMembers } from "~/hooks/useMembers";
 import { cn } from "~/lib/utils";
+import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ params, request }) => {
   const { memberId } = params;
+
+  const token = getTokenFromRequest(request);
+
+  if (!token) {
+    return redirect("/login");
+  }
 
   return {
     memberId: memberId,

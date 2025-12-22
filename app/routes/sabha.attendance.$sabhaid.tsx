@@ -1,6 +1,7 @@
 import { RotateCcw, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
+  redirect,
   useLoaderData,
   useNavigate,
   useNavigationType,
@@ -22,6 +23,7 @@ import {
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
 import { useSabha } from "~/hooks/useSabha";
 import { localJsonStorageService } from "~/lib/localStorage";
+import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
   return [
@@ -30,7 +32,13 @@ export function meta({}: MetaArgs) {
   ];
 }
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const token = getTokenFromRequest(request);
+
+  if (!token) {
+    return redirect("/login");
+  }
+
   return {
     sabhaId: params.sabhaid,
   };

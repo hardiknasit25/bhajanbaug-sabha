@@ -1,6 +1,11 @@
 import { CirclePlus } from "lucide-react";
 import { useEffect } from "react";
-import { Link, useSearchParams } from "react-router";
+import {
+  Link,
+  redirect,
+  useSearchParams,
+  type LoaderFunctionArgs,
+} from "react-router";
 import { Virtuoso } from "react-virtuoso";
 import SabhaFormDialog from "~/components/forms/SabhaForm";
 import EventCard from "~/components/shared-component/EventCard";
@@ -9,6 +14,17 @@ import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useSabha } from "~/hooks/useSabha";
 import { cn } from "~/lib/utils";
+import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const token = getTokenFromRequest(request);
+
+  if (!token) {
+    return redirect("/login");
+  }
+
+  return null;
+};
 
 type SabhaTabs = "upcoming-sabha" | "completed-sabha";
 
