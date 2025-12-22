@@ -1,4 +1,15 @@
+import { useNavigate } from "react-router";
+import { AUTH_TOKEN } from "~/constant/constant";
+import { deleteCookie } from "~/utils/cookie";
+
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogOut = () => {
+    deleteCookie(AUTH_TOKEN);
+    navigate("/login");
+  };
+
   return (
     <div className="h-full w-full flex flex-col justify-start items-center">
       <div className="w-full flex flex-col justify-start items-center gap-4 border-b border-borderColor py-5">
@@ -19,7 +30,10 @@ function Sidebar() {
         <span className="text-textColor text-xl font-light uppercase">
           profile
         </span>
-        <span className="text-textColor text-xl font-light uppercase">
+        <span
+          className="text-textColor text-xl font-light uppercase"
+          onClick={handleLogOut}
+        >
           Log out
         </span>
       </div>
