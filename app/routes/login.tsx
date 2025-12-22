@@ -25,7 +25,7 @@ function Login() {
       return;
     }
 
-    if (password !== "bhajanbaug123") {
+    if (password !== `yuva_sabha@${mobile.slice(-4)}`) {
       setError("Invalid mobile or password");
       return;
     }
