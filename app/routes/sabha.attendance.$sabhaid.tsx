@@ -1,35 +1,19 @@
 import { RotateCcw, Send } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  redirect,
-  useLoaderData,
-  useNavigate,
-  useNavigationType,
-  type LoaderFunction,
-  type MetaArgs,
-} from "react-router";
+import { redirect, useLoaderData, useNavigate, useNavigationType, type LoaderFunction, type MetaArgs } from "react-router";
 import { Virtuoso } from "react-virtuoso";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { Button } from "~/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
 import { useSabha } from "~/hooks/useSabha";
 import { localJsonStorageService } from "~/lib/localStorage";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
-  return [
-    { title: "Members" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
+  return [{ title: "Members" }, { name: "description", content: "Welcome to React Router!" }];
 }
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -75,6 +59,7 @@ export default function EventAttendance() {
     syncSabhaAttendance,
   } = useSabha();
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [userFilter, setUserFilter] = useState<string | undefined>(undefined);
 
   const [dialog, setDialog] = useState<DialogState>({
     open: false,
@@ -84,24 +69,18 @@ export default function EventAttendance() {
   });
 
   const fetchSabhaMembers = () => {
-    fetchSabhaById(Number(sabhaId));
+    fetchSabhaById(Number(sabhaId), userFilter);
   };
 
   const checkPendingChanges = () => {
-    const present =
-      localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-    const absent =
-      localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+    const present = localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+    const absent = localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
 
     setHasPendingChanges(present.length > 0 || absent.length > 0);
     return present.length > 0 || absent.length > 0;
   };
 
-  const openDialog = (
-    title: string,
-    message: string,
-    buttons: DialogButton[]
-  ) => {
+  const openDialog = (title: string, message: string, buttons: DialogButton[]) => {
     setDialog({ open: true, title, message, buttons });
   };
 
@@ -115,69 +94,55 @@ export default function EventAttendance() {
     localJsonStorageService.setItem(PRESENT_MEMBER, []);
     localJsonStorageService.setItem(ABSENT_MEMBER, []);
 
-    openDialog(
-      "Synced Successfully!",
-      "Your attendance data has been synced successfully.",
-      [
-        {
-          label: "OK",
-          action: () => setDialog((d) => ({ ...d, open: false })),
-        },
-      ]
-    );
+    fetchSabhaById(Number(sabhaId), userFilter);
+
+    openDialog("Synced Successfully!", "Your attendance data has been synced successfully.", [
+      {
+        label: "OK",
+        action: () => setDialog((d) => ({ ...d, open: false })),
+      },
+    ]);
   };
 
   const handleSubmitSabha = async () => {
     const hasPending = await checkPendingChanges();
 
     if (hasPending) {
-      openDialog(
-        "Unsaved Changes?",
-        "You have unsaved changes. Please sync them before submitting.",
-        [
-          {
-            label: "Sync Now",
-            action: async () => {
-              setDialog((d) => ({ ...d, open: false }));
+      openDialog("Unsaved Changes?", "You have unsaved changes. Please sync them before submitting.", [
+        {
+          label: "Sync Now",
+          action: async () => {
+            setDialog((d) => ({ ...d, open: false }));
 
-              handleRefreshSabha();
-            },
+            handleRefreshSabha();
           },
-        ]
-      );
+        },
+      ]);
     } else {
-      openDialog(
-        "Submit Attendance?",
-        "Are you sure you want to submit? You can't edit after submission.",
-        [
-          {
-            label: "Cancel",
-            variant: "outline",
-            action: () => setDialog((d) => ({ ...d, open: false })),
-          },
-          {
-            label: "Yes, Submit",
-            action: async () => {
-              setDialog((d) => ({ ...d, open: false }));
+      openDialog("Submit Attendance?", "Are you sure you want to submit? You can't edit after submission.", [
+        {
+          label: "Cancel",
+          variant: "outline",
+          action: () => setDialog((d) => ({ ...d, open: false })),
+        },
+        {
+          label: "Yes, Submit",
+          action: async () => {
+            setDialog((d) => ({ ...d, open: false }));
 
-              const res = await submitSabhaReport(Number(sabhaId));
+            const res = await submitSabhaReport(Number(sabhaId));
 
-              if (res) {
-                openDialog(
-                  "Submitted Successfully!",
-                  "Attendance submission completed successfully.",
-                  [
-                    {
-                      label: "OK",
-                      action: () => setDialog((d) => ({ ...d, open: false })),
-                    },
-                  ]
-                );
-              }
-            },
+            if (res) {
+              openDialog("Submitted Successfully!", "Attendance submission completed successfully.", [
+                {
+                  label: "OK",
+                  action: () => setDialog((d) => ({ ...d, open: false })),
+                },
+              ]);
+            }
           },
-        ]
-      );
+        },
+      ]);
     }
   };
 
@@ -221,33 +186,29 @@ export default function EventAttendance() {
   // }, [hasPendingChanges]);
 
   const openUnsyncedDialog = () => {
-    openDialog(
-      "Unsynced Changes",
-      "You have unsynced attendance changes. Please sync before leaving.",
-      [
-        {
-          label: "Cancel",
-          variant: "outline",
-          action: () => {
-            setDialog((d) => ({ ...d, open: false }));
-          },
+    openDialog("Unsynced Changes", "You have unsynced attendance changes. Please sync before leaving.", [
+      {
+        label: "Cancel",
+        variant: "outline",
+        action: () => {
+          setDialog((d) => ({ ...d, open: false }));
         },
-        {
-          label: "Sync & Leave",
-          action: async () => {
-            setDialog((d) => ({ ...d, open: false }));
+      },
+      {
+        label: "Sync & Leave",
+        action: async () => {
+          setDialog((d) => ({ ...d, open: false }));
 
-            const res = await syncSabhaAttendance(Number(sabhaId));
-            if (res) {
-              localJsonStorageService.setItem(PRESENT_MEMBER, []);
-              localJsonStorageService.setItem(ABSENT_MEMBER, []);
+          const res = await syncSabhaAttendance(Number(sabhaId));
+          if (res) {
+            localJsonStorageService.setItem(PRESENT_MEMBER, []);
+            localJsonStorageService.setItem(ABSENT_MEMBER, []);
 
-              navigate("/sabha"); // Now allow back navigation
-            }
-          },
+            navigate("/sabha"); // Now allow back navigation
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // useEffect(() => {
@@ -271,10 +232,8 @@ export default function EventAttendance() {
 
   useEffect(() => {
     return () => {
-      const present =
-        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-      const absent =
-        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+      const present = localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+      const absent = localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
 
       if (present.length || absent.length) {
         (async () => {
@@ -301,28 +260,16 @@ export default function EventAttendance() {
         iconName: "ArrowLeft",
         children: (
           <div className="flex justify-end items-center gap-4 pr-3">
-            <div
-              className="relative cursor-pointer"
-              onClick={handleRefreshSabha}
-            >
+            <div className="relative cursor-pointer" onClick={handleRefreshSabha}>
               <RotateCcw size={22} />
 
-              {((
-                localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) ?? []
-              ).length > 0 ||
-                (localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) ?? [])
-                  .length > 0) && (
+              {((localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) ?? []).length > 0 ||
+                (localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) ?? []).length > 0) && (
                 <span className="absolute -top-0 right-0 w-2 h-2 rounded-full bg-red-500"></span>
               )}
             </div>
 
-            {selectedSabha?.status === "running" && (
-              <Send
-                size={22}
-                onClick={handleSubmitSabha}
-                className="cursor-pointer"
-              />
-            )}
+            {selectedSabha?.status === "running" && <Send size={22} onClick={handleSubmitSabha} className="cursor-pointer" />}
           </div>
         ),
         className: "flex-col gap-2",
@@ -335,24 +282,30 @@ export default function EventAttendance() {
     >
       {/* Summary Counts */}
       <div className="flex justify-around items-center p-2 shadow-sm">
-        <div className="flex flex-col items-center">
-          <span className="text-3xl text-green-500 font-medium font-poppins">
-            {totalPresentOnSelectedSabha}
-          </span>
-          <span className="text-base text-textColor font-medium font-poppins">
-            Present
-          </span>
+        <div
+          className="flex flex-col items-center cursor-pointer"
+          onClick={() => {
+            const newFilter = userFilter === "present" ? undefined : "present";
+            setUserFilter(newFilter);
+            fetchSabhaById(Number(sabhaId), newFilter);
+          }}
+        >
+          <span className="text-3xl text-green-500 font-medium font-poppins">{totalPresentOnSelectedSabha}</span>
+          <span className="text-base text-textColor font-medium font-poppins">Present</span>
         </div>
 
-        <div className="flex flex-col items-center">
+        <div
+          className="flex flex-col items-center cursor-pointer"
+          onClick={() => {
+            const newFilter = userFilter === "absent" ? undefined : "absent";
+            setUserFilter(newFilter);
+            fetchSabhaById(Number(sabhaId), newFilter);
+          }}
+        >
           <span className="text-3xl text-red-500 font-medium font-poppins">
-            {selectedSabha?.status !== "completed"
-              ? totalAbsentOnSelectedSabha
-              : sabhaMembers.length - totalPresentOnSelectedSabha}
+            {selectedSabha?.status !== "completed" ? totalAbsentOnSelectedSabha : sabhaMembers.length - totalPresentOnSelectedSabha}
           </span>
-          <span className="text-base text-textColor font-medium font-poppins">
-            Absent
-          </span>
+          <span className="text-base text-textColor font-medium font-poppins">Absent</span>
         </div>
       </div>
 
@@ -364,48 +317,26 @@ export default function EventAttendance() {
           totalCount={filteredSabhaMembers.length}
           itemContent={(index) => {
             const member = filteredSabhaMembers[index];
-            return (
-              <MemberListCard
-                key={member.smk_no}
-                member={member}
-                from="attendance"
-                selectedSabha={selectedSabha}
-              />
-            );
+            return <MemberListCard key={member.smk_no} member={member} from="attendance" selectedSabha={selectedSabha} />;
           }}
           components={{
-            Footer: () =>
-              sabhaMembers.length === 0 ? (
-                <div className="text-center text-textLightColor mt-2">
-                  No members found
-                </div>
-              ) : null,
+            Footer: () => (sabhaMembers.length === 0 ? <div className="text-center text-textLightColor mt-2">No members found</div> : null),
           }}
         />
       )}
 
       {/* Universal Dialog */}
-      <Dialog
-        open={dialog.open}
-        onOpenChange={(v) => setDialog((d) => ({ ...d, open: v }))}
-      >
+      <Dialog open={dialog.open} onOpenChange={(v) => setDialog((d) => ({ ...d, open: v }))}>
         <DialogContent className="rounded-none">
           <DialogHeader>
-            <DialogTitle className="text-textColor font-semibold">
-              {dialog.title}
-            </DialogTitle>
+            <DialogTitle className="text-textColor font-semibold">{dialog.title}</DialogTitle>
           </DialogHeader>
 
           <p className="text-base text-textLightColor">{dialog.message}</p>
 
           <DialogFooter className="mt-4 flex gap-2">
             {dialog.buttons.map((btn, index) => (
-              <Button
-                key={index}
-                variant={btn.variant || "default"}
-                className="flex-1"
-                onClick={btn.action}
-              >
+              <Button key={index} variant={btn.variant || "default"} className="flex-1" onClick={btn.action}>
                 {btn.label}
               </Button>
             ))}

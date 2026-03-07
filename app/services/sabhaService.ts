@@ -19,11 +19,14 @@ export const sabhaService = {
   },
 
   //#region fetch sabha by id
-  getSabhaById: async (sabhaId: number) => {
+  getSabhaById: async (sabhaId: number, user?: string) => {
     try {
-      const response = await axiosInstance.get(
-        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`
-      );
+      const params: Record<string, string> = {};
+      if (user) {
+        params.user = user;
+      }
+      console.log("params: ", params);
+      const response = await axiosInstance.get(`${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`, { params });
       return response.data;
     } catch (error) {
       throw error;
@@ -33,10 +36,8 @@ export const sabhaService = {
   //#region sync sabha attendance by id
   syncSabhaAttendance: async (sabhaId: number) => {
     try {
-      const presentUserIds =
-        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-      const absentUserIds =
-        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+      const presentUserIds = localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+      const absentUserIds = localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
       const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.SYNC}`, {
         sabha_id: sabhaId,
         present_user_id: presentUserIds,
@@ -52,12 +53,9 @@ export const sabhaService = {
   startSabha: async (sabhaId: number) => {
     try {
       console.log("sabhaId", sabhaId);
-      const response = await axiosInstance.put(
-        `${API_ENDPOINTS.SABHA.START_SABHA}/${sabhaId}`,
-        {
-          sabha_date: new Date().toISOString(),
-        }
-      );
+      const response = await axiosInstance.put(`${API_ENDPOINTS.SABHA.START_SABHA}/${sabhaId}`, {
+        sabha_date: new Date().toISOString(),
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -67,9 +65,7 @@ export const sabhaService = {
   //#region complete sabha by id
   submitSabhaReport: async (sabhaId: number) => {
     try {
-      const response = await axiosInstance.put(
-        `${API_ENDPOINTS.SABHA.SUBMIT_SABHA_REPORT}/${sabhaId}`
-      );
+      const response = await axiosInstance.put(`${API_ENDPOINTS.SABHA.SUBMIT_SABHA_REPORT}/${sabhaId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -91,12 +87,9 @@ export const sabhaService = {
   //#region update sabha
   updateSabha: async (sabhaId: number, title: string) => {
     try {
-      const response = await axiosInstance.put(
-        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`,
-        {
-          title,
-        }
-      );
+      const response = await axiosInstance.put(`${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`, {
+        title,
+      });
       return response.data;
     } catch (error) {
       throw error;
