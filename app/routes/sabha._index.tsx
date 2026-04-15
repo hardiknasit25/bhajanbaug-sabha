@@ -50,7 +50,7 @@ export default function Sabha() {
   const fetchSabhaListData = async () => {
     setSabhaList([]);
     const data = await fetchSabhaList(
-      activeTab === "upcoming-sabha" ? "upcoming" : "completed"
+      activeTab === "upcoming-sabha" ? "upcoming" : "completed",
     ).unwrap();
     return data.rows;
   };

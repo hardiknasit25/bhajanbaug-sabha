@@ -99,7 +99,7 @@ export default function Report() {
         // Download all members report
         const response = await axiosInstance.get(
           `report/download/user?filter=${filterParam}`,
-          { responseType: "blob" }
+          { responseType: "blob" },
         );
         url = window.URL.createObjectURL(new Blob([response.data]));
         filename = "user_attendance_report.xlsx";
@@ -107,7 +107,7 @@ export default function Report() {
         // Download group report
         const response = await axiosInstance.get(
           `report/download/group?filter=${filterParam}`,
-          { responseType: "blob" }
+          { responseType: "blob" },
         );
         url = window.URL.createObjectURL(new Blob([response.data]));
         filename = "group_attendance_report.xlsx";
@@ -280,6 +280,7 @@ export default function Report() {
               groupData={filteredMembersByPoshakGroups}
               from="report"
               totalSabha={sabhaCount}
+              showDownload={false}
             />
           )}
         </TabsContent>
