@@ -1,3 +1,4 @@
+import type { SabhaType } from "~/components/forms/SabhaForm";
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
 import axiosInstance from "~/interceptor/interceptor";
 import { API_ENDPOINTS } from "~/lib/api-endpoints";
@@ -26,7 +27,10 @@ export const sabhaService = {
         params.user = user;
       }
       console.log("params: ", params);
-      const response = await axiosInstance.get(`${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`, { params });
+      const response = await axiosInstance.get(
+        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`,
+        { params },
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -36,8 +40,10 @@ export const sabhaService = {
   //#region sync sabha attendance by id
   syncSabhaAttendance: async (sabhaId: number) => {
     try {
-      const presentUserIds = localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
-      const absentUserIds = localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
+      const presentUserIds =
+        localJsonStorageService.getItem<number[]>(PRESENT_MEMBER) || [];
+      const absentUserIds =
+        localJsonStorageService.getItem<number[]>(ABSENT_MEMBER) || [];
       const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.SYNC}`, {
         sabha_id: sabhaId,
         present_user_id: presentUserIds,
@@ -53,9 +59,12 @@ export const sabhaService = {
   startSabha: async (sabhaId: number) => {
     try {
       console.log("sabhaId", sabhaId);
-      const response = await axiosInstance.put(`${API_ENDPOINTS.SABHA.START_SABHA}/${sabhaId}`, {
-        sabha_date: new Date().toISOString(),
-      });
+      const response = await axiosInstance.put(
+        `${API_ENDPOINTS.SABHA.START_SABHA}/${sabhaId}`,
+        {
+          sabha_date: new Date().toISOString(),
+        },
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -65,7 +74,9 @@ export const sabhaService = {
   //#region complete sabha by id
   submitSabhaReport: async (sabhaId: number) => {
     try {
-      const response = await axiosInstance.put(`${API_ENDPOINTS.SABHA.SUBMIT_SABHA_REPORT}/${sabhaId}`);
+      const response = await axiosInstance.put(
+        `${API_ENDPOINTS.SABHA.SUBMIT_SABHA_REPORT}/${sabhaId}`,
+      );
       return response.data;
     } catch (error) {
       throw error;
@@ -73,10 +84,11 @@ export const sabhaService = {
   },
 
   //#region create sabha
-  createSabha: async (title: string) => {
+  createSabha: async (title: string, sabhaType: SabhaType) => {
     try {
       const response = await axiosInstance.post(`${API_ENDPOINTS.SABHA.BASE}`, {
         title,
+        sabha_type: sabhaType,
       });
       return response.data;
     } catch (error) {
@@ -85,11 +97,15 @@ export const sabhaService = {
   },
 
   //#region update sabha
-  updateSabha: async (sabhaId: number, title: string) => {
+  updateSabha: async (sabhaId: number, title: string, sabhaType: SabhaType) => {
     try {
-      const response = await axiosInstance.put(`${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`, {
-        title,
-      });
+      const response = await axiosInstance.put(
+        `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`,
+        {
+          title,
+          sabha_type: sabhaType,
+        },
+      );
       return response.data;
     } catch (error) {
       throw error;

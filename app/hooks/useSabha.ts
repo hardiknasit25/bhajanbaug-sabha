@@ -1,3 +1,4 @@
+import type { SabhaType } from "~/components/forms/SabhaForm";
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   closeSabhaFormDailog,
@@ -26,21 +27,29 @@ export const useSabha = () => {
   const actions = {
     setSabhaList: (sabhaList: SabhaData[]) => dispatch(setSabhaList(sabhaList)),
     setLoading: (loading: boolean) => dispatch(setLoading(loading)),
-    setSabhaMemberSearchText: (searchText: string) => dispatch(setSabhaMemberSearchText(searchText)),
-    openSabhaFormDialog: (selectedSabha: SabhaData | null) => dispatch(openSabhaFormDialog(selectedSabha)),
+    setSabhaMemberSearchText: (searchText: string) =>
+      dispatch(setSabhaMemberSearchText(searchText)),
+    openSabhaFormDialog: (selectedSabha: SabhaData | null) =>
+      dispatch(openSabhaFormDialog(selectedSabha)),
     closeSabhaFormDailog: () => dispatch(closeSabhaFormDailog()),
     doMemberPresent: (userId: number) => dispatch(doMemberPresent(userId)),
     doMemberAbsenent: (userId: number) => dispatch(doMemberAbsent(userId)),
   };
 
   const thunks = {
-    fetchSabhaList: (sabha_status: string) => dispatch(fetchSabhaList(sabha_status)),
-    fetchSabhaById: (sabhaId: number, user?: string) => dispatch(fetchSabhaById({ sabhaId, user })),
-    syncSabhaAttendance: (sabhaId: number) => dispatch(syncSabhaAttendance(sabhaId)),
+    fetchSabhaList: (sabha_status: string) =>
+      dispatch(fetchSabhaList(sabha_status)),
+    fetchSabhaById: (sabhaId: number, user?: string) =>
+      dispatch(fetchSabhaById({ sabhaId, user })),
+    syncSabhaAttendance: (sabhaId: number) =>
+      dispatch(syncSabhaAttendance(sabhaId)),
     startSabha: (sabhaId: number) => dispatch(startSabha(sabhaId)),
-    submitSabhaReport: (sabhaId: number) => dispatch(submitSabhaReport(sabhaId)),
-    createSabha: (title: string) => dispatch(createSabha(title)),
-    updateSabha: (sabhaId: number, title: string) => dispatch(updateSabha({ sabhaId, title })),
+    submitSabhaReport: (sabhaId: number) =>
+      dispatch(submitSabhaReport(sabhaId)),
+    createSabha: (title: string, sabhaType: SabhaType) =>
+      dispatch(createSabha({ title, sabhaType })),
+    updateSabha: (sabhaId: number, title: string, sabhaType: SabhaType) =>
+      dispatch(updateSabha({ sabhaId, title, sabhaType })),
   };
 
   return {

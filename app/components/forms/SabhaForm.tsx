@@ -16,10 +16,22 @@ import SubmitButton from "../shared-component/SubmitButton";
 
 import { useSabha } from "~/hooks/useSabha";
 import { useEffect } from "react";
+import SelectController from "../formController.tsx/SelectController";
+
+export type SabhaType = "yuva_sabha" | "group_sabha";
 
 // Zod Schema
 const sabhaFormSchema = z.object({
   sabhaName: z.string().min(1, "Sabha name is required"),
+  sabhaType: z.string().refine(
+    (value) => {
+      const validTypes = ["yuva_sabha", "group_sabha"];
+      return validTypes.includes(value);
+    },
+    {
+      message: "Invalid sabha type",
+    },
+  ),
 });
 
 type SabhaFormData = z.infer<typeof sabhaFormSchema>;
@@ -45,6 +57,7 @@ export default function SabhaFormDialog() {
     resolver: zodResolver(sabhaFormSchema),
     defaultValues: {
       sabhaName: selectedSabha ? selectedSabha?.title : DEFAULT_NAME,
+      sabhaType: "yuva_sabha",
     },
   });
 
@@ -52,18 +65,20 @@ export default function SabhaFormDialog() {
     console.log("Form Data:", data);
     const title = data.sabhaName;
     if (!selectedSabha) {
-      createSabha(title);
+      createSabha(title, data.sabhaType as SabhaType);
     } else {
-      updateSabha(selectedSabha.id, title);
+      updateSabha(selectedSabha.id, title, data.sabhaType as SabhaType);
     }
     reset({
       sabhaName: DEFAULT_NAME,
+      sabhaType: "yuva_sabha",
     });
   };
 
   const handleCancel = () => {
     reset({
       sabhaName: DEFAULT_NAME,
+      sabhaType: "yuva_sabha",
     });
     closeSabhaFormDailog();
   };
@@ -71,12 +86,13 @@ export default function SabhaFormDialog() {
   useEffect(() => {
     if (selectedSabha) {
       setValue("sabhaName", selectedSabha?.title);
+      setValue("sabhaType", selectedSabha?.sabha_type || "yuva_sabha");
     }
   }, [selectedSabha]);
 
   return (
     <Dialog open={sabhaFormDialog} onOpenChange={handleCancel}>
-      <DialogContent className="rounded-none">
+      <DialogContent className="rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-textColor font-semibold">
             {selectedSabha ? "Update" : "Create New"} Sabha
@@ -91,6 +107,16 @@ export default function SabhaFormDialog() {
             label="Sabha Name"
             placeholder="Enter sabha name"
             required
+          />
+
+          <SelectController
+            name="sabhaType"
+            control={control}
+            label="Select Sabha"
+            options={[
+              { label: "Yuva Sabha", value: "yuva_sabha" },
+              { label: "Group Sabha", value: "group_sabha" },
+            ]}
           />
 
           <DialogFooter className="flex flex-row gap-3">
