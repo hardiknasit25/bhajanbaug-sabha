@@ -278,7 +278,6 @@ export default function EventAttendance() {
       if (res) {
         localJsonStorageService.setItem(PRESENT_MEMBER, []);
         localJsonStorageService.setItem(ABSENT_MEMBER, []);
-        navigate("/sabha");
       }
     } catch (error) {
       console.error("Sync failed during unmount:", error);
@@ -294,7 +293,8 @@ export default function EventAttendance() {
 
       if (present.length || absent.length) {
         (async () => {
-          syncAttendance();
+          await syncAttendance();
+          navigate("/sabha");
         })();
       }
     };

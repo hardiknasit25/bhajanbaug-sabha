@@ -37,7 +37,7 @@ function MemberListCard({
     <div
       className={cn(
         "relative flex justify-center gap-2 p-2 pl-4 transition-all",
-        from === "members" ? "items-center" : "items-start"
+        from === "members" ? "items-center" : "items-start",
       )}
       onClick={() => {
         if (from === "attendance") return;
@@ -72,10 +72,13 @@ function MemberListCard({
           <div className="w-full flex justify-start items-center gap-12 mt-0.5 pl-4">
             {/* 1. Present / Green Check */}
             <button
-              onClick={() => handlePresentClick(member?.id)}
+              onClick={() => {
+                if (member?.is_present) return;
+                handlePresentClick(member?.id);
+              }}
               className={cn(
                 "flex items-center justify-center rounded-full transition-transform p-1",
-                member.is_present && "bg-greenTextColor"
+                member.is_present && "bg-greenTextColor",
               )}
               aria-label="Mark Present"
             >
@@ -83,7 +86,7 @@ function MemberListCard({
                 size={24}
                 className={cn(
                   "text-greenTextColor",
-                  member?.is_present && "text-white"
+                  member?.is_present && "text-white",
                 )}
               />
               <span className="sr-only">Present</span>
@@ -91,13 +94,16 @@ function MemberListCard({
 
             {/* 2. Absent / Red Cross */}
             <button
-              onClick={() => handleAbsentClick(member?.id)}
+              onClick={() => {
+                if (member?.is_present === false) return;
+                handleAbsentClick(member?.id);
+              }}
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-full transition-transform",
                 (member?.is_present === false ||
                   (selectedSabha?.status === "completed" &&
                     !member?.is_present)) &&
-                  "bg-red-500"
+                  "bg-red-500",
               )}
               aria-label="Mark Absent"
             >
@@ -108,7 +114,7 @@ function MemberListCard({
                   (member?.is_present === false ||
                     (selectedSabha?.status === "completed" &&
                       !member?.is_present)) &&
-                    "text-white"
+                    "text-white",
                 )}
               />
             </button>
