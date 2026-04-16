@@ -1,4 +1,8 @@
-import axios, { AxiosError, type AxiosInstance, type AxiosResponse } from "axios";
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type AxiosResponse,
+} from "axios";
 import { AUTH_TOKEN } from "~/constant/constant";
 import cookieService from "~/lib/cookie";
 import sessionStorageService from "~/lib/sessionStorage";
@@ -23,7 +27,9 @@ axiosInstance.interceptors.request.use(
   function (config) {
     // Do something before request is sent
     // Example: Add auth token
-    const token = sessionStorageService.getItem(AUTH_TOKEN) || cookieService.getItem(AUTH_TOKEN);
+    const token =
+      sessionStorageService.getItem(AUTH_TOKEN) ||
+      cookieService.getItem(AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
