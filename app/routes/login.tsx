@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { AUTH_TOKEN } from "~/constant/constant";
+import axiosInstance from "~/interceptor/interceptor";
+import sessionStorageService from "~/lib/sessionStorage";
 import { setCookie } from "~/utils/cookie";
-import { getExpiryFromToken } from "~/utils/jwt";
 import { useNavigate } from "react-router";
 
 function Login() {
@@ -25,61 +26,46 @@ function Login() {
       return;
     }
 
-    if (password !== `yuva_sabha@${mobile.slice(-4)}`) {
-      setError("Invalid mobile or password");
-      return;
-    }
-
-    console.log("Login Request:", { mobile, password });
-
-    // ----------------------------
-    // MOCK API CALL (replace later)
-    // ----------------------------
-    const mockResponse = {
-      success: true,
-      authToken: "SAMPLE_AUTH_TOKEN_123",
-    };
-
-    if (mockResponse.success) {
-      const expiry = getExpiryFromToken(mockResponse.authToken);
-      const maxAge =
-        expiry && expiry > Date.now()
-          ? Math.floor((expiry - Date.now()) / 1000)
-          : 60 * 60 * 24;
-      setCookie(AUTH_TOKEN, mockResponse.authToken, {
-        path: "/", // cookie available across the site
-        expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day
-        secure: false, // only over HTTPS
-        sameSite: "strict", // CSRF protection or use lax
+    try {
+      const response = await axiosInstance.post("/auth/login", {
+        mobile,
+        password,
       });
-      console.log("AuthToken saved:", mockResponse.authToken);
+
+      const responseData = response.data ?? {};
+      const authToken = responseData.authToken || responseData.token || responseData.data?.token || responseData.data?.authToken || "";
+      const isSuccessfulLogin = response.status === 200 && !!authToken;
+
+      if (!isSuccessfulLogin) {
+        setError(responseData?.message || "Login failed. Please check your credentials.");
+        return;
+      }
+
+      sessionStorageService.setItem(AUTH_TOKEN, authToken);
+      setCookie(AUTH_TOKEN, authToken, {
+        path: "/",
+        secure: false,
+        sameSite: "strict",
+      });
+      console.log("AuthToken saved:", authToken);
       navigate("/");
-    } else {
-      setError("Login failed. Please try again.");
+    } catch (error: unknown) {
+      const message = error && typeof error === "object" && "message" in error ? (error as Error).message : "Login failed. Please try again.";
+      setError(message);
     }
   };
 
   return (
     <div className="relative h-dvh w-full flex flex-col gap-4 justify-end items-center pb-24 px-4">
       {/* Background Image */}
-      <img
-        src="/images/background-maharaj.png"
-        alt="background"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      <img src="/images/background-maharaj.png" alt="background" className="absolute inset-0 h-full w-full object-cover" />
 
       {/* Error Message */}
-      {error && (
-        <div className="z-20 text-red-500 text-sm bg-white/90 px-2 py-1 rounded-full">
-          {error}
-        </div>
-      )}
+      {error && <div className="z-20 text-red-500 text-sm bg-white/90 px-2 py-1 rounded-full">{error}</div>}
 
       {/* Mobile Number Input */}
       <div className="w-full h-12 z-20 flex justify-start items-center px-4 gap-3 bg-primaryColor rounded-full text-white">
-        <span className="text-white border-r border-white pr-3 text-base">
-          +91
-        </span>
+        <span className="text-white border-r border-white pr-3 text-base">+91</span>
         <input
           type="number"
           className="w-full outline-none bg-transparent font-normal text-base text-white placeholder:text-white/70"
@@ -99,16 +85,8 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button
-          type="button"
-          onClick={() => setShowPassword((prev) => !prev)}
-          className="absolute right-4 text-white"
-        >
-          {showPassword ? (
-            <EyeOff size={20} className="text-white/80" />
-          ) : (
-            <Eye size={20} className="text-white/80" />
-          )}
+        <button type="button" onClick={() => setShowPassword((prev) => !prev)} className="absolute right-4 text-white">
+          {showPassword ? <EyeOff size={20} className="text-white/80" /> : <Eye size={20} className="text-white/80" />}
         </button>
       </div>
 
