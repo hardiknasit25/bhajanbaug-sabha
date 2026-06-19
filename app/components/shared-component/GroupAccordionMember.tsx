@@ -41,9 +41,13 @@ function GroupAccordionMember({
                   100,
               )
             : 0;
+        // Stable key based on the group's id (not the array index), so accordion
+        // open-state stays attached to the right group when the list is filtered.
+        const groupKey =
+          group.group_id != null ? `group-${group.group_id}` : "group-others";
         return (
-          <Accordion type="multiple">
-            <AccordionItem value={`group-${index}`} key={`group-${index}`}>
+          <Accordion type="multiple" key={groupKey}>
+            <AccordionItem value={groupKey}>
               <AccordionTrigger
                 className={cn(
                   "sticky top-0 z-10 w-full flex justify-center items-center py-2 rounded-none px-4 border-b border-t border-borderColor bg-gray-200",
@@ -77,7 +81,7 @@ function GroupAccordionMember({
               <AccordionContent className="p-0 bg-white">
                 {group?.users?.map((member) => (
                   <MemberListCard
-                    key={member.smk_no}
+                    key={member.id}
                     member={member}
                     from={from}
                     totalSabha={totalSabha}

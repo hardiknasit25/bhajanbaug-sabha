@@ -1,5 +1,6 @@
 import {
   createAsyncThunk,
+  createSelector,
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
@@ -299,24 +300,32 @@ const memberSlice = createSlice({
 export const { setMembers, setSearchText, setLoading, setError } =
   memberSlice.actions;
 
-export const selectFilteredMembers = (state: { members: MemberState }) => {
-  const { members, searchText } = state.members;
-  return filterMembers(members, searchText);
-};
+// Memoized: recompute only when the underlying list or searchText changes,
+// so consumers don't re-render / re-filter on every unrelated state update.
+export const selectFilteredMembers = createSelector(
+  [
+    (state: { members: MemberState }) => state.members.members,
+    (state: { members: MemberState }) => state.members.searchText,
+  ],
+  (members, searchText) => filterMembers(members, searchText),
+);
 
-export const selectFilteredMembersByPoshakGroups = (state: {
-  members: MemberState;
-}) => {
-  const { membersByPoshakGroups, searchText } = state.members;
-  if (!searchText?.trim()) return membersByPoshakGroups;
+export const selectFilteredMembersByPoshakGroups = createSelector(
+  [
+    (state: { members: MemberState }) => state.members.membersByPoshakGroups,
+    (state: { members: MemberState }) => state.members.searchText,
+  ],
+  (membersByPoshakGroups, searchText) => {
+    if (!searchText?.trim()) return membersByPoshakGroups;
 
-  // Filter members within each group and keep groups that have matching members
-  return membersByPoshakGroups
-    .map((group) => ({
-      ...group,
-      users: filterMembers(group.users, searchText),
-    }))
-    .filter((group) => group.users.length > 0);
-};
+    // Filter members within each group and keep groups that have matching members
+    return membersByPoshakGroups
+      .map((group) => ({
+        ...group,
+        users: filterMembers(group.users, searchText),
+      }))
+      .filter((group) => group.users.length > 0);
+  },
+);
 
 export default memberSlice.reducer;

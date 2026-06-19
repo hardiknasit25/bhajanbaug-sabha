@@ -252,7 +252,7 @@ export default function Report() {
                 const member = filteredMembers[index];
                 return (
                   <MemberListCard
-                    key={member.smk_no}
+                    key={member.id}
                     member={member}
                     totalSabha={sabhaCount}
                     from={"report"}

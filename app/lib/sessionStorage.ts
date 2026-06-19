@@ -5,9 +5,6 @@
  * On client: Uses sessionStorage
  */
 
-// In-memory storage for server-side
-const memoryStorage = new Map<string, string>();
-
 /**
  * Check if we're in a browser environment
  */
@@ -16,11 +13,15 @@ const isBrowser = (): boolean => {
 };
 
 /**
- * Get the appropriate storage object
+ * Get the appropriate storage object.
+ * On the server there is no per-request storage context here, so we return a
+ * throwaway Map per call. This makes server-side reads return null and writes
+ * go nowhere — preventing cross-user data bleed that a shared module-level Map
+ * would cause under SSR. Real auth state must come from the request cookie.
  */
 const getStorage = (): Storage | Map<string, string> => {
   if (!isBrowser()) {
-    return memoryStorage;
+    return new Map<string, string>();
   }
   return sessionStorage;
 };

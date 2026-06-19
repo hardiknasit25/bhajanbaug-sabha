@@ -1,5 +1,6 @@
 import {
   createAsyncThunk,
+  createSelector,
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
@@ -411,9 +412,13 @@ export const {
   doMemberAbsent,
 } = sabhaSlice.actions;
 
-export const selectFilteredSabhaMembers = (state: { sabha: SabhaState }) => {
-  const { sabhaMembers, searchText } = state.sabha;
-  return filterMembers(sabhaMembers, searchText);
-};
+// Memoized: recompute only when the sabha member list or searchText changes.
+export const selectFilteredSabhaMembers = createSelector(
+  [
+    (state: { sabha: SabhaState }) => state.sabha.sabhaMembers,
+    (state: { sabha: SabhaState }) => state.sabha.searchText,
+  ],
+  (sabhaMembers, searchText) => filterMembers(sabhaMembers, searchText),
+);
 
 export default sabhaSlice.reducer;

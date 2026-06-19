@@ -389,7 +389,7 @@ export default function EventAttendance() {
             const member = filteredSabhaMembers[index];
             return (
               <MemberListCard
-                key={member.smk_no}
+                key={member.id}
                 member={member}
                 from="attendance"
                 selectedSabha={selectedSabha}

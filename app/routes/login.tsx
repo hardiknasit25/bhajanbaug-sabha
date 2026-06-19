@@ -46,7 +46,10 @@ function Login() {
 
       setCookie(AUTH_TOKEN, authToken, {
         path: "/",
-        secure: false,
+        // Send only over HTTPS in production; stays usable on localhost (HTTP) for dev.
+        secure:
+          typeof window !== "undefined" &&
+          window.location.protocol === "https:",
         sameSite: "strict",
       });
       navigate("/");
@@ -76,7 +79,7 @@ function Login() {
       )}
 
       {/* Mobile Number Input */}
-      <div className="w-full h-12 z-20 flex justify-start items-center px-4 gap-3 bg-primaryColor rounded-full text-white">
+      <div className="relative w-full h-12 z-20 flex justify-start items-center px-4 gap-3 bg-primaryColor rounded-full text-white">
         <span className="text-white border-r border-white pr-3 text-base">
           +91
         </span>
@@ -115,7 +118,7 @@ function Login() {
       {/* Next Button */}
       <button
         onClick={handleLogin}
-        className="w-full z-20 h-12 flex justify-center items-center gap-2 px-4 bg-white rounded-full font-semibold text-textLightColor mt-8"
+        className="relative w-full z-20 h-12 flex justify-center items-center gap-2 px-4 bg-white rounded-full font-semibold text-textLightColor mt-8"
       >
         <span className="text-base uppercase tracking-wider">Next</span>
       </button>

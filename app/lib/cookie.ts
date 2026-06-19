@@ -15,8 +15,10 @@ interface CookieOptions {
   httpOnly?: boolean; // Note: Cannot be set from client-side JavaScript
 }
 
-// In-memory storage for server-side
-const memoryCookies = new Map<string, string>();
+// Server-side calls get a throwaway Map per call (writes vanish, reads return null),
+// so no cookie state is shared across requests under SSR (prevents cross-user bleed).
+// Real auth state on the server must be read from the request cookie header.
+const serverStore = (): Map<string, string> => new Map<string, string>();
 
 /**
  * Check if we're in a browser environment
@@ -75,7 +77,7 @@ export const cookieService = {
    */
   setItem: (name: string, value: string, options?: CookieOptions): void => {
     if (!isBrowser()) {
-      memoryCookies.set(name, value);
+      serverStore().set(name, value);
       return;
     }
 
@@ -92,7 +94,7 @@ export const cookieService = {
    */
   getItem: (name: string): string | null => {
     if (!isBrowser()) {
-      return memoryCookies.get(name) ?? null;
+      return serverStore().get(name) ?? null;
     }
 
     try {
@@ -112,7 +114,7 @@ export const cookieService = {
     options?: Omit<CookieOptions, "maxAge" | "expires">
   ): void => {
     if (!isBrowser()) {
-      memoryCookies.delete(name);
+      serverStore().delete(name);
       return;
     }
 
@@ -134,7 +136,7 @@ export const cookieService = {
    */
   clear: (): void => {
     if (!isBrowser()) {
-      memoryCookies.clear();
+      serverStore().clear();
       return;
     }
 
@@ -153,7 +155,7 @@ export const cookieService = {
    */
   hasItem: (name: string): boolean => {
     if (!isBrowser()) {
-      return memoryCookies.has(name);
+      return serverStore().has(name);
     }
 
     try {
@@ -170,7 +172,7 @@ export const cookieService = {
    */
   keys: (): string[] => {
     if (!isBrowser()) {
-      return Array.from(memoryCookies.keys());
+      return Array.from(serverStore().keys());
     }
 
     try {
@@ -187,7 +189,7 @@ export const cookieService = {
    */
   all: (): Record<string, string> => {
     if (!isBrowser()) {
-      return Object.fromEntries(memoryCookies);
+      return Object.fromEntries(serverStore());
     }
 
     try {
@@ -203,7 +205,7 @@ export const cookieService = {
    */
   size: (): number => {
     if (!isBrowser()) {
-      return memoryCookies.size;
+      return serverStore().size;
     }
 
     try {

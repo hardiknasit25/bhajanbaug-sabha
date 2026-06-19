@@ -4,7 +4,8 @@ import ImageComponent from "./ImageComponent";
 import { useNavigate } from "react-router";
 import { cn } from "~/lib/utils";
 import { Separator } from "../ui/separator";
-import { useSabha } from "~/hooks/useSabha";
+import { useAppDispatch } from "~/store/hooks";
+import { doMemberPresent, doMemberAbsent } from "~/store/slice/sabhaSlice";
 import type { SabhaData } from "~/types/sabha.interface";
 import { localJsonStorageService } from "~/lib/localStorage";
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
@@ -20,17 +21,16 @@ function MemberListCard({
   selectedSabha?: SabhaData | null;
   totalSabha?: number;
 }) {
-  const { doMemberPresent, doMemberAbsenent } = useSabha();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handlePresentClick = (id: number) => {
-    // 1. Update Redux
-    doMemberPresent(id);
+    // Dispatch directly so each card does NOT subscribe to the whole sabha slice.
+    dispatch(doMemberPresent(id));
   };
 
   const handleAbsentClick = (id: number) => {
-    // 1. Update Redux
-    doMemberAbsenent(id);
+    dispatch(doMemberAbsent(id));
   };
 
   return (

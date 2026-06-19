@@ -5,8 +5,8 @@ import sessionStorageService from "~/lib/sessionStorage";
 
 // const BASE_URL = "http://172.17.0.49:6111/api/v1/"; // hari vaghasiya IP address
 // const BASE_URL = "http://192.168.195.252:6111/api/v1/"; // local laptop IP address
-// const BASE_URL = "http://localhost:6956/api/v1"; // local laptop IP address
-const BASE_URL = "https://smaran.vrutti.app/api/v1/"; //  host url
+const BASE_URL = "http://localhost:6956/api/v1"; // local laptop IP address
+// const BASE_URL = "https://smaran.vrutti.app/api/v1/"; //  host url
 // const BASE_URL = "http://172.17.0.66:6111/api/v1/"; // local vrutti PC IP address
 
 const axiosInstance: AxiosInstance = axios.create({
@@ -14,7 +14,6 @@ const axiosInstance: AxiosInstance = axios.create({
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-    "X-Custom-Header": "foobar",
   },
 });
 
@@ -50,10 +49,12 @@ axiosInstance.interceptors.response.use(
 
     // Handle specific status codes
     if (error.response?.status === 401) {
-      // Unauthorized - clear auth and redirect to login
+      // Unauthorized - clear auth and redirect to login (client-side only, avoid redirect loop)
       sessionStorageService.removeItem(AUTH_TOKEN);
       cookieService.removeItem(AUTH_TOKEN);
-      // window.location.href = '/login';
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
 
     return Promise.reject(error);

@@ -29,18 +29,23 @@ function EventCard({ sabha }: { sabha: SabhaData }) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-between bg-eventCardColor rounded-xl shadow-sm overflow-hidden border-l-4 px-4",
+        "flex flex-col items-center justify-between bg-eventCardColor rounded-xl shadow-sm overflow-hidden border-l-4 px-4 cursor-pointer",
         status === "upcoming" && "bg-blue-400/10 border-l-blue-500",
         status === "completed" && "bg-green-400/10 border-l-green-500",
         status === "running" && "bg-orange-400/10 border-l-orange-500"
       )}
       onClick={(e) => {
-        // If click originated from the Start/Join/Completed button → stop
+        // If click originated from the Start/Join/Completed button → let the button handle it
         if ((e.target as HTMLElement).closest("button")) return;
 
-        if (sabha?.status !== "upcoming") return;
+        // Upcoming → open the edit dialog (unchanged behavior).
+        if (sabha?.status === "upcoming") {
+          openSabhaFormDialog(sabha);
+          return;
+        }
 
-        openSabhaFormDialog(sabha);
+        // Completed / running → navigate to the attendance view, same as the status button.
+        navigate(`/sabha/attendance/${sabha.id}`);
       }}
     >
       <div className="w-full flex items-center justify-between">

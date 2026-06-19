@@ -1,5 +1,6 @@
 import {
   createAsyncThunk,
+  createSelector,
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
@@ -105,24 +106,31 @@ const reportSlice = createSlice({
 export const { setMemberReport, setGroupReport, setSearchText } =
   reportSlice.actions;
 
-export const selectFilteredReportMembers = (state: { report: ReportState }) => {
-  const { memberReport, searchText } = state.report;
-  return filterMembers(memberReport, searchText);
-};
+// Memoized: recompute only when the report list or searchText changes.
+export const selectFilteredReportMembers = createSelector(
+  [
+    (state: { report: ReportState }) => state.report.memberReport,
+    (state: { report: ReportState }) => state.report.searchText,
+  ],
+  (memberReport, searchText) => filterMembers(memberReport, searchText),
+);
 
-export const selectFilteredReportMembersByPoshakGroups = (state: {
-  report: ReportState;
-}) => {
-  const { groupReport, searchText } = state.report;
-  if (!searchText?.trim()) return groupReport;
+export const selectFilteredReportMembersByPoshakGroups = createSelector(
+  [
+    (state: { report: ReportState }) => state.report.groupReport,
+    (state: { report: ReportState }) => state.report.searchText,
+  ],
+  (groupReport, searchText) => {
+    if (!searchText?.trim()) return groupReport;
 
-  // Filter members within each group and keep groups that have matching members
-  return groupReport
-    .map((group) => ({
-      ...group,
-      users: filterMembers(group.users, searchText),
-    }))
-    .filter((group) => group.users.length > 0);
-};
+    // Filter members within each group and keep groups that have matching members
+    return groupReport
+      .map((group) => ({
+        ...group,
+        users: filterMembers(group.users, searchText),
+      }))
+      .filter((group) => group.users.length > 0);
+  },
+);
 
 export default reportSlice.reducer;
