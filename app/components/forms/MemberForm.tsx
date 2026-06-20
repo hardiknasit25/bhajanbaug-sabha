@@ -25,26 +25,13 @@ const occupationOptions = [
   { value: "business", label: "Business" },
 ];
 
-const roleOptions = [
-  { value: "1", label: "Member" },
-  { value: "2", label: "Admin" },
-  { value: "3", label: "Coordinator" },
-];
-
-const satsangDayOptions = [
-  { value: "monday", label: "Monday" },
-  { value: "tuesday", label: "Tuesday" },
-  { value: "wednesday", label: "Wednesday" },
-  { value: "thursday", label: "Thursday" },
-  { value: "friday", label: "Friday" },
-  { value: "saturday", label: "Saturday" },
-  { value: "sunday", label: "Sunday" },
-];
-
 function MemberForm({ mode = "create", initialData }: MemberFormProps) {
-  console.log("initialData: ", initialData);
   const { groupSelect, fetchGroupSelect, createMember, updateMember } = useMembers();
   const navigate = useNavigate();
+
+  // In "create" mode only the minimal fields are shown; the rest are revealed in
+  // "update" mode (so the full user record can be edited).
+  const isUpdate = mode === "update";
 
   const {
     control,
@@ -101,7 +88,7 @@ function MemberForm({ mode = "create", initialData }: MemberFormProps) {
   return (
     <div className="w-full h-full">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="w-full space-y-4 pb-4">
-        {/* Required Fields Section */}
+        {/* --- Minimal fields (shown in both create & update) --- */}
         <InputController name="first_name" control={control} label="First Name" placeholder="Enter first name" required />
 
         <InputController name="middle_name" control={control} label="Middle Name" placeholder="Enter middle name" required />
@@ -122,32 +109,7 @@ function MemberForm({ mode = "create", initialData }: MemberFormProps) {
 
         <InputController name="mobile" control={control} label="Mobile Number" placeholder="Enter 10 digit mobile number" required />
 
-        <InputController name="email" control={control} label="Email" type="email" placeholder="Enter email address" />
-
-        {/* Role & Organization Section */}
-        {/* <ChipController
-          name="role_id"
-          control={control}
-          label="Role"
-          placeholder="Select a role"
-          options={roleOptions}
-          multi={false}
-          required
-        /> */}
-
-        <InputController name="smk_no" control={control} label="SMK Number" placeholder="Enter SMK number" />
-
-        {/* Personal Information Section */}
-
-        <DatePickerController name="birth_day" control={control} label="Birth Date" placeholder="Select birth date" disablePastDates={false} />
-
-        <DatePickerController name="satsang_day" control={control} label="Satsang Day" placeholder="Select satsang day" disablePastDates={false} />
-
-        <InputController name="mulgam" control={control} label="Mulgam" placeholder="Enter mulgam" />
-
-        <TextAreaController name="address" control={control} label="Address" placeholder="Enter full address" rows={3} />
-
-        {/* poshak leader */}
+        {/* poshak leader (optional) */}
         <div className="space-y-2">
           <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Select Poshak Group Leader</label>
 
@@ -171,152 +133,150 @@ function MemberForm({ mode = "create", initialData }: MemberFormProps) {
           />
         </div>
 
-        {/* Family Status Section */}
-
-        <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Married?</label>
-          <Controller
-            name="is_married"
-            control={control}
-            render={({ field, fieldState: { error } }) => (
-              <>
-                <RadioGroup
-                  value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
-                  onValueChange={(val) => field.onChange(val === "yes")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="yes" id="married-yes" />
-                    <label htmlFor="married-yes">Yes</label>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="no" id="married-no" />
-                    <label htmlFor="married-no">No</label>
-                  </div>
-                </RadioGroup>
-                {error && <ErrorMessage error={error.message as string} />}
-              </>
-            )}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Family Leader?</label>
-          <Controller
-            name="is_family_leader"
-            control={control}
-            render={({ field, fieldState: { error } }) => (
-              <>
-                <RadioGroup
-                  value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
-                  onValueChange={(val) => field.onChange(val === "yes")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="yes" id="family-leader-yes" />
-                    <label htmlFor="family-leader-yes">Yes</label>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="no" id="family-leader-no" />
-                    <label htmlFor="family-leader-no">No</label>
-                  </div>
-                </RadioGroup>
-                {error && <ErrorMessage error={error.message as string} />}
-              </>
-            )}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Is Smruti User?</label>
-          <Controller
-            name="is_smruti"
-            control={control}
-            render={({ field, fieldState: { error } }) => (
-              <>
-                <RadioGroup
-                  value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
-                  onValueChange={(val) => field.onChange(val === "yes")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="yes" id="family-leader-yes" />
-                    <label htmlFor="family-leader-yes">Yes</label>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="no" id="family-leader-no" />
-                    <label htmlFor="family-leader-no">No</label>
-                  </div>
-                </RadioGroup>
-                {error && <ErrorMessage error={error.message as string} />}
-              </>
-            )}
-          />
-        </div>
-
-        {/* <InputController
-          name="family_leader_id"
-          control={control}
-          label="Family Leader ID"
-          type="number"
-          placeholder="Enter family leader ID"
-        /> */}
-
-        {/* Occupation Section */}
-
-        <ChipController name="occupation" control={control} label="Occupation Type" options={occupationOptions} multi={false} required />
-
-        <InputController name="occupation_field" control={control} label="Occupation Field" placeholder="Enter occupation field" />
-
-        {/* Seva Section */}
-
-        <div className="space-y-2">
-          <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Seva?</label>
-          <Controller
-            name="is_seva"
-            control={control}
-            render={({ field, fieldState: { error } }) => (
-              <>
-                <RadioGroup
-                  value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
-                  onValueChange={(val) => field.onChange(val === "yes")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="yes" id="seva-yes" />
-                    <label htmlFor="seva-yes">Yes</label>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="no" id="seva-no" />
-                    <label htmlFor="seva-no">No</label>
-                  </div>
-                </RadioGroup>
-                {error && <ErrorMessage error={error.message as string} />}
-              </>
-            )}
-          />
-        </div>
-
-        <TextAreaController name="seva" control={control} label="Seva Details" placeholder="Enter seva details" rows={2} />
-
         <InputController name="parichit_bhakat_name" control={control} label="Parichit Bhakt Name" placeholder="Enter parichit bhakt name" />
+
+        {/* --- Additional fields (only when updating an existing member) --- */}
+        {isUpdate && (
+          <>
+            <InputController name="email" control={control} label="Email" type="email" placeholder="Enter email address" />
+
+            <InputController name="smk_no" control={control} label="SMK Number" placeholder="Enter SMK number" />
+
+            <DatePickerController name="birth_day" control={control} label="Birth Date" placeholder="Select birth date" disablePastDates={false} />
+
+            <DatePickerController name="satsang_day" control={control} label="Satsang Day" placeholder="Select satsang day" disablePastDates={false} />
+
+            <InputController name="mulgam" control={control} label="Mulgam" placeholder="Enter mulgam" />
+
+            <TextAreaController name="address" control={control} label="Address" placeholder="Enter full address" rows={3} />
+
+            {/* Family Status Section */}
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Married?</label>
+              <Controller
+                name="is_married"
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <RadioGroup
+                      value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
+                      onValueChange={(val) => field.onChange(val === "yes")}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="yes" id="married-yes" />
+                        <label htmlFor="married-yes">Yes</label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="no" id="married-no" />
+                        <label htmlFor="married-no">No</label>
+                      </div>
+                    </RadioGroup>
+                    {error && <ErrorMessage error={error.message as string} />}
+                  </>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Family Leader?</label>
+              <Controller
+                name="is_family_leader"
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <RadioGroup
+                      value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
+                      onValueChange={(val) => field.onChange(val === "yes")}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="yes" id="family-leader-yes" />
+                        <label htmlFor="family-leader-yes">Yes</label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="no" id="family-leader-no" />
+                        <label htmlFor="family-leader-no">No</label>
+                      </div>
+                    </RadioGroup>
+                    {error && <ErrorMessage error={error.message as string} />}
+                  </>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Is Smruti User?</label>
+              <Controller
+                name="is_smruti"
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <RadioGroup
+                      value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
+                      onValueChange={(val) => field.onChange(val === "yes")}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="yes" id="smruti-yes" />
+                        <label htmlFor="smruti-yes">Yes</label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="no" id="smruti-no" />
+                        <label htmlFor="smruti-no">No</label>
+                      </div>
+                    </RadioGroup>
+                    {error && <ErrorMessage error={error.message as string} />}
+                  </>
+                )}
+              />
+            </div>
+
+            {/* Occupation Section (optional) */}
+            <ChipController name="occupation" control={control} label="Occupation Type" options={occupationOptions} multi={false} />
+
+            <InputController name="occupation_field" control={control} label="Occupation Field" placeholder="Enter occupation field" />
+
+            {/* Seva Section */}
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer text-sm font-medium">Seva?</label>
+              <Controller
+                name="is_seva"
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <>
+                    <RadioGroup
+                      value={field.value === true ? "yes" : field.value === false ? "no" : undefined}
+                      onValueChange={(val) => field.onChange(val === "yes")}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="yes" id="seva-yes" />
+                        <label htmlFor="seva-yes">Yes</label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <RadioGroupItem value="no" id="seva-no" />
+                        <label htmlFor="seva-no">No</label>
+                      </div>
+                    </RadioGroup>
+                    {error && <ErrorMessage error={error.message as string} />}
+                  </>
+                )}
+              />
+            </div>
+
+            <TextAreaController name="seva" control={control} label="Seva Details" placeholder="Enter seva details" rows={2} />
+          </>
+        )}
 
         {/* Submit Button */}
         <div className="pt-4">
-          {/* <SubmitButton
-
-            buttonText={mode === "create" ? "Create Member" : "Update Member"}
-            loadingButtonText={
-              mode === "create" ? "Creating..." : "Updating..."
-            }
-            loading={isSubmitting}
-          /> */}
-          <button type="submit" className={cn("w-full rounded-full bg-primaryColor text-white font-medium py-2 px-4 transition-colors duration-200")}>
-            {mode === "create" ? "Create Member" : "Update Member"}
+          <button type="submit" disabled={isSubmitting} className={cn("w-full rounded-full bg-primaryColor text-white font-medium py-2 px-4 transition-colors duration-200", isSubmitting && "opacity-60 cursor-not-allowed")}>
+            {mode === "create" ? (isSubmitting ? "Creating..." : "Create Member") : isSubmitting ? "Updating..." : "Update Member"}
           </button>
         </div>
       </form>

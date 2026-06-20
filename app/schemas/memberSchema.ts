@@ -4,12 +4,11 @@ export const userCreateSchema = z.object({
   first_name: z.string().min(2).max(60),
   middle_name: z.string().min(1).max(60),
   last_name: z.string().min(2).max(60),
+  // Email is optional; any valid email address is accepted (no domain restriction).
   email: z
     .string()
     .email("Invalid email")
-    .min(5)
     .max(100)
-    .regex(/@gmail\.com$/, "Invalid email domain")
     .or(z.literal(""))
     .nullable()
     .optional(),
