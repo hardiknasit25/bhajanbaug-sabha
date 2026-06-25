@@ -132,6 +132,41 @@ export default function Report() {
     }
   };
 
+  // Download the attendance report for a single poshak group (current filter).
+  // groupId is null for the "Others" bucket -> backend expects group_id=none.
+  const handleGroupDownload = async (
+    groupId: number | null,
+    leaderName: string,
+  ) => {
+    const filterParam = selectedFilter || "lastMonthAllSabha";
+    const groupParam = groupId == null ? "none" : String(groupId);
+    const fallbackName = groupId == null ? "No Group" : `group_${groupId}`;
+    try {
+      const response = await axiosInstance.get(
+        `report/download/group?filter=${filterParam}&group_id=${groupParam}`,
+        { responseType: "blob" },
+      );
+      // Filename = group leader's full name (sanitized for the filesystem).
+      const safeName =
+        (leaderName || fallbackName)
+          .replace(/[\\/:*?"<>|]/g, "_")
+          .replace(/\s+/g, " ")
+          .trim() || fallbackName;
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${safeName}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error) {
+      throw error;
+    }
+  };
+
   // Sync with URL and call API
   useEffect(() => {
     const urlTab = (searchParams.get("tab") as ReportTabs) || "all-members";
@@ -280,7 +315,8 @@ export default function Report() {
               groupData={filteredMembersByPoshakGroups}
               from="report"
               totalSabha={sabhaCount}
-              showDownload={false}
+              showDownload={true}
+              onDownloadGroup={handleGroupDownload}
             />
           )}
         </TabsContent>

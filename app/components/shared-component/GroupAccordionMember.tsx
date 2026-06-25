@@ -16,11 +16,13 @@ function GroupAccordionMember({
   from,
   totalSabha,
   showDownload,
+  onDownloadGroup,
 }: {
   groupData: PoshakGroupData[];
   from: "report" | "members";
   totalSabha?: number;
   showDownload?: boolean;
+  onDownloadGroup?: (groupId: number | null, leaderName: string) => void;
 }) {
   return (
     <div className="h-full w-full overflow-auto">
@@ -71,7 +73,22 @@ function GroupAccordionMember({
                         value={groupTotalPercentage}
                       />
                       {showDownload && (
-                        <Download size={20} className="text-blueTextColor" />
+                        <Download
+                          size={20}
+                          role="button"
+                          aria-label="Download group report"
+                          className="text-blueTextColor cursor-pointer"
+                          onClick={(e) => {
+                            // Don't toggle the accordion when downloading.
+                            e.stopPropagation();
+                            e.preventDefault();
+                            // group_id is null for the "Others" (no-group) bucket.
+                            onDownloadGroup?.(
+                              group.group_id ?? null,
+                              poshakLeaderName,
+                            );
+                          }}
+                        />
                       )}
                     </div>
                   )}
