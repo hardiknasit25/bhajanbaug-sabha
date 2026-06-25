@@ -24,12 +24,14 @@ const initialState: ReportState = {
   loading: false,
 };
 
+type ReportArg = { filter: filterType; sabhaIds?: number[] };
+
 //#region fetchMemberReport thunk
 export const fetchMembersReport = createAsyncThunk(
   "report/fetchMembersReport",
-  async (filter: filterType, { rejectWithValue }) => {
+  async ({ filter, sabhaIds }: ReportArg, { rejectWithValue }) => {
     try {
-      const response = await reportService.getMemberReport(filter);
+      const response = await reportService.getMemberReport(filter, sabhaIds);
       return response.data as {
         sabha_count: number;
         result: MemberData[];
@@ -43,9 +45,9 @@ export const fetchMembersReport = createAsyncThunk(
 //#region fetchGroupReport thunk
 export const fetchGroupReport = createAsyncThunk(
   "report/fetchGroupReport",
-  async (filter: filterType, { rejectWithValue }) => {
+  async ({ filter, sabhaIds }: ReportArg, { rejectWithValue }) => {
     try {
-      const response = await reportService.getGroupReport(filter);
+      const response = await reportService.getGroupReport(filter, sabhaIds);
       return response.data as {
         sabha_count: number;
         groups: PoshakGroupData[];

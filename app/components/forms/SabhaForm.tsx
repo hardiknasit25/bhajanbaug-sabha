@@ -45,7 +45,12 @@ export default function SabhaFormDialog() {
     updateSabha,
   } = useSabha();
 
-  const DEFAULT_NAME = "Yuva Sabha";
+  // Default title: "Yuva Sabha - dd/mm/yyyy" (today's date)
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, "0");
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const yyyy = today.getFullYear();
+  const DEFAULT_NAME = `Yuva Sabha - ${dd}/${mm}/${yyyy}`;
 
   const {
     control,

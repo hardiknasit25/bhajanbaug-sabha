@@ -21,10 +21,10 @@ export const useReport = () => {
   };
 
   const thunks = {
-    fetchMembersReport: (filter: filterType) =>
-      dispatch(fetchMembersReport(filter)),
-    fetchGroupReport: (filter: filterType) =>
-      dispatch(fetchGroupReport(filter)),
+    fetchMembersReport: (filter: filterType, sabhaIds?: number[]) =>
+      dispatch(fetchMembersReport({ filter, sabhaIds })),
+    fetchGroupReport: (filter: filterType, sabhaIds?: number[]) =>
+      dispatch(fetchGroupReport({ filter, sabhaIds })),
   };
 
   return {

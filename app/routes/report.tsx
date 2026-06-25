@@ -22,9 +22,11 @@ import {
   DrawerTrigger,
 } from "~/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Checkbox } from "~/components/ui/checkbox";
 import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
 import axiosInstance from "~/interceptor/interceptor";
+import { sabhaService } from "~/services/sabhaService";
 import type { filterType } from "~/services/reportService";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
@@ -47,21 +49,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 type ReportTabs = "all-members" | "by-group" | "completed-sabha";
 
-const filters: { label: string; value: filterType }[] = [
-  { label: "Last Sabha", value: "lastSabha" },
-  { label: "Last Four Sabha", value: "lastFourSabha" },
-  { label: "Last Month All Sabha", value: "lastMonthAllSabha" },
-  { label: "Last Three Months All Sabha", value: "lastThreeMonthsAllSabha" },
-  { label: "Last Six Months All Sabha", value: "lastSixMonthsAllSabha" },
-  { label: "Last Year All Sabha", value: "lastYearAllSabha" },
-  { label: "All Sabha With Duration", value: "allSabhaWithDuration" },
-];
-
 export default function Report() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<ReportTabs>("all-members");
   const [selectedFilter, setSelectedFilter] = useState<filterType>("lastSabha");
+
+  // Specific completed-sabha selection. When `appliedSabhaIds` is non-empty it drives
+  // the report (and downloads), taking precedence over the duration `selectedFilter`.
+  const [completedSabhas, setCompletedSabhas] = useState<
+    { id: number; title: string; sabha_date?: string }[]
+  >([]);
+  const [checkedSabhaIds, setCheckedSabhaIds] = useState<number[]>([]); // in-drawer (pending)
+  const [appliedSabhaIds, setAppliedSabhaIds] = useState<number[]>([]); // applied to report
+  const [sabhaSearch, setSabhaSearch] = useState("");
 
   const {
     loading,
@@ -92,13 +93,17 @@ export default function Report() {
 
   const handleDownLoadClick = async () => {
     const filterParam = selectedFilter || "lastMonthAllSabha";
+    const sabhaIdsParam =
+      appliedSabhaIds.length > 0
+        ? `&sabha_ids=${appliedSabhaIds.join(",")}`
+        : "";
     try {
       let url = "";
       let filename = "";
       if (activeTab === "all-members") {
         // Download all members report
         const response = await axiosInstance.get(
-          `report/download/user?filter=${filterParam}`,
+          `report/download/user?filter=${filterParam}${sabhaIdsParam}`,
           { responseType: "blob" },
         );
         url = window.URL.createObjectURL(new Blob([response.data]));
@@ -106,7 +111,7 @@ export default function Report() {
       } else if (activeTab === "by-group") {
         // Download group report
         const response = await axiosInstance.get(
-          `report/download/group?filter=${filterParam}`,
+          `report/download/group?filter=${filterParam}${sabhaIdsParam}`,
           { responseType: "blob" },
         );
         url = window.URL.createObjectURL(new Blob([response.data]));
@@ -141,9 +146,13 @@ export default function Report() {
     const filterParam = selectedFilter || "lastMonthAllSabha";
     const groupParam = groupId == null ? "none" : String(groupId);
     const fallbackName = groupId == null ? "No Group" : `group_${groupId}`;
+    const sabhaIdsParam =
+      appliedSabhaIds.length > 0
+        ? `&sabha_ids=${appliedSabhaIds.join(",")}`
+        : "";
     try {
       const response = await axiosInstance.get(
-        `report/download/group?filter=${filterParam}&group_id=${groupParam}`,
+        `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}`,
         { responseType: "blob" },
       );
       // Filename = group leader's full name (sanitized for the filesystem).
@@ -167,6 +176,50 @@ export default function Report() {
     }
   };
 
+  // Load the completed-sabha list once (for the multi-select filter in the drawer).
+  useEffect(() => {
+    (async () => {
+      try {
+        const res: any = await sabhaService.getSabhas("completed");
+        const rows = Array.isArray(res?.data) ? res.data : (res?.data?.rows ?? []);
+        setCompletedSabhas(
+          rows.map((s: any) => ({
+            id: s.id,
+            title: s.title,
+            sabha_date: s.sabha_date,
+          })),
+        );
+      } catch {
+        setCompletedSabhas([]);
+      }
+    })();
+  }, []);
+
+  // Sabha multi-select helpers (search-aware: "Select All" acts on the visible rows)
+  const visibleSabhas = completedSabhas.filter((s) => {
+    const q = sabhaSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      (s.title || "").toLowerCase().includes(q) ||
+      (s.sabha_date || "").toLowerCase().includes(q)
+    );
+  });
+  const allVisibleChecked =
+    visibleSabhas.length > 0 &&
+    visibleSabhas.every((s) => checkedSabhaIds.includes(s.id));
+  const toggleAllVisible = () =>
+    setCheckedSabhaIds((prev) => {
+      const visibleIds = visibleSabhas.map((s) => s.id);
+      return allVisibleChecked
+        ? prev.filter((id) => !visibleIds.includes(id))
+        : Array.from(new Set([...prev, ...visibleIds]));
+    });
+  const toggleSabha = (id: number) =>
+    setCheckedSabhaIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  const applySabhaSelection = () => setAppliedSabhaIds(checkedSabhaIds);
+
   // Sync with URL and call API
   useEffect(() => {
     const urlTab = (searchParams.get("tab") as ReportTabs) || "all-members";
@@ -178,13 +231,13 @@ export default function Report() {
     setSabhaList([]);
 
     if (urlTab === "all-members") {
-      fetchMembersReport(urlFilter);
+      fetchMembersReport(urlFilter, appliedSabhaIds);
     } else if (urlTab === "by-group") {
-      fetchGroupReport(urlFilter);
+      fetchGroupReport(urlFilter, appliedSabhaIds);
     } else if (urlTab === "completed-sabha") {
       fetchSabhaList("completed");
     }
-  }, [searchParams]);
+  }, [searchParams, appliedSabhaIds]);
 
   return (
     <LayoutWrapper
@@ -206,34 +259,77 @@ export default function Report() {
 
               <DrawerContent>
                 <DrawerHeader className="text-start">
-                  <DrawerTitle>Select A Duration</DrawerTitle>
+                  <DrawerTitle>Generate Report</DrawerTitle>
                   <DrawerDescription>
-                    Select the duration for which you want to generate the
-                    report.
+                    Pick specific completed sabhas, or choose a duration below.
                   </DrawerDescription>
                 </DrawerHeader>
 
-                {/* FILTER OPTIONS */}
-                <div className="px-4 py-2 flex flex-col gap-2">
-                  {filters.map((filter) => {
-                    const isActive = selectedFilter === filter.value;
-                    return (
-                      <DialogClose
-                        key={filter.value}
-                        onClick={() => {
-                          setSelectedFilter(filter.value);
-                          updateParam("filter", filter.value);
-                        }}
-                        className={`w-full text-left p-3 rounded-lg border transition-all duration-200 ${
-                          isActive
-                            ? "bg-primaryColor text-white border-primaryColor"
-                            : "bg-white text-textColor border-borderColor"
-                        }`}
-                      >
-                        {filter.label}
-                      </DialogClose>
-                    );
-                  })}
+                <div className="max-h-[70vh] overflow-y-auto pb-4">
+                  {/* SELECT SPECIFIC SABHAS (multi-select + select all) */}
+                  <div className="px-4 pb-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-textColor">
+                        Select Sabha
+                      </span>
+                      <label className="flex items-center gap-2 text-sm text-textColor cursor-pointer">
+                        <Checkbox
+                          checked={allVisibleChecked}
+                          onCheckedChange={toggleAllVisible}
+                        />
+                        Select All
+                      </label>
+                    </div>
+
+                    {/* Search sabhas */}
+                    <input
+                      type="text"
+                      value={sabhaSearch}
+                      onChange={(e) => setSabhaSearch(e.target.value)}
+                      placeholder="Search sabha..."
+                      className="w-full mb-2 h-10 px-3 rounded-lg border border-borderColor bg-white text-sm text-textColor placeholder:text-textLightColor outline-none focus:border-primaryColor"
+                    />
+
+                    <div className="max-h-48 overflow-y-auto rounded-lg border border-borderColor divide-y divide-borderColor">
+                      {visibleSabhas.length === 0 ? (
+                        <div className="p-3 text-sm text-textLightColor">
+                          {completedSabhas.length === 0
+                            ? "No completed sabhas"
+                            : "No sabha matches your search"}
+                        </div>
+                      ) : (
+                        visibleSabhas.map((s) => (
+                          <label
+                            key={s.id}
+                            className="flex items-center gap-3 p-3 text-sm cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={checkedSabhaIds.includes(s.id)}
+                              onCheckedChange={() => toggleSabha(s.id)}
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-textColor">{s.title}</span>
+                              {s.sabha_date && (
+                                <span className="text-xs text-textLightColor">
+                                  {s.sabha_date}
+                                </span>
+                              )}
+                            </div>
+                          </label>
+                        ))
+                      )}
+                    </div>
+
+                    <DialogClose
+                      disabled={checkedSabhaIds.length === 0}
+                      onClick={applySabhaSelection}
+                      className="w-full mt-3 p-3 rounded-lg bg-primaryColor text-white text-sm font-medium disabled:opacity-50"
+                    >
+                      Generate Report
+                      {checkedSabhaIds.length ? ` (${checkedSabhaIds.length})` : ""}
+                    </DialogClose>
+
+                  </div>
                 </div>
 
                 {/* <DrawerFooter className="flex-row justify-between items-center px-4 pb-4">
