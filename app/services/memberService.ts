@@ -114,4 +114,32 @@ export const memberService = {
       throw error;
     }
   },
+
+  //#region download the import template (.xlsx)
+  downloadTemplate: async () => {
+    const response = await axiosInstance.get(API_ENDPOINTS.MEMBERS.TEMPLATE, {
+      responseType: "blob",
+    });
+    return response.data as Blob;
+  },
+
+  //#region export all users (.xlsx)
+  exportMembers: async () => {
+    const response = await axiosInstance.get(API_ENDPOINTS.MEMBERS.EXPORT, {
+      responseType: "blob",
+    });
+    return response.data as Blob;
+  },
+
+  //#region import users from an .xlsx file
+  importMembers: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.MEMBERS.IMPORT,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return response.data;
+  },
 };

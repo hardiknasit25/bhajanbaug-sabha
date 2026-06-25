@@ -1,13 +1,12 @@
-import { CirclePlus } from "lucide-react";
 import { useEffect } from "react";
 import {
-  Link,
   type LoaderFunctionArgs,
   type MetaArgs,
   redirect,
   useSearchParams,
 } from "react-router";
 import { Virtuoso } from "react-virtuoso";
+import MemberBulkActions from "~/components/shared-component/MemberBulkActions";
 import GroupAccordionMember from "~/components/shared-component/GroupAccordionMember";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
@@ -64,6 +63,15 @@ export default function Members() {
     }
   }, [activeTab]);
 
+  // Reload the currently-active tab's data (used after a bulk Excel import).
+  const refreshMembers = () => {
+    if (activeTab === "all-members") {
+      fetchMembers();
+    } else {
+      fetchMembersByPoshakGroups();
+    }
+  };
+
   // --------------------------
   // HANDLE SEARCH CHANGE
   // --------------------------
@@ -75,11 +83,7 @@ export default function Members() {
     <LayoutWrapper
       headerConfigs={{
         title: "Members",
-        children: (
-          <Link to="/members/create-member">
-            <CirclePlus size={25} />
-          </Link>
-        ),
+        children: <MemberBulkActions onImported={refreshMembers} />,
         className: "flex-col gap-2",
         description: `Total ${filteredMembers.length} Members`,
         showSearch: true,

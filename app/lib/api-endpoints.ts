@@ -4,6 +4,10 @@ export const API_ENDPOINTS = {
     UPDATE_STATUS: "update-status",
 
     POSHAK_GROUP: "poshak-group",
+
+    IMPORT: "user/import",
+    EXPORT: "user/export/data",
+    TEMPLATE: "user/export/template",
   },
 
   SABHA: {
