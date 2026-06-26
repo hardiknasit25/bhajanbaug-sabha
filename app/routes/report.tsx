@@ -23,6 +23,11 @@ import {
 } from "~/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
 import axiosInstance from "~/interceptor/interceptor";
@@ -63,6 +68,13 @@ export default function Report() {
   const [checkedSabhaIds, setCheckedSabhaIds] = useState<number[]>([]); // in-drawer (pending)
   const [appliedSabhaIds, setAppliedSabhaIds] = useState<number[]>([]); // applied to report
   const [sabhaSearch, setSabhaSearch] = useState("");
+  const [dlMenuOpen, setDlMenuOpen] = useState(false);
+  // Progress for the "Download Separate" (one file per group) flow.
+  const [sepProgress, setSepProgress] = useState<{
+    current: number;
+    total: number;
+    label: string;
+  } | null>(null);
 
   const {
     loading,
@@ -135,6 +147,60 @@ export default function Report() {
       // Optionally show error to user
       throw error;
     }
+  };
+
+  // Download each group's report as its own Excel file, one by one, with progress.
+  const handleDownloadSeparate = async () => {
+    if (sepProgress) return; // already running
+    const groups: any[] = groupReport || [];
+    if (!groups.length) return;
+    const filterParam = selectedFilter || "lastMonthAllSabha";
+    const sabhaIdsParam =
+      appliedSabhaIds.length > 0
+        ? `&sabha_ids=${appliedSabhaIds.join(",")}`
+        : "";
+
+    setSepProgress({ current: 0, total: groups.length, label: "" });
+    for (let i = 0; i < groups.length; i++) {
+      const g = groups[i];
+      const groupParam = g.group_id == null ? "none" : String(g.group_id);
+      const leaderName = g.leader_details
+        ? [
+            g.leader_details.first_name,
+            g.leader_details.middle_name,
+            g.leader_details.last_name,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        : "Others";
+      setSepProgress({ current: i + 1, total: groups.length, label: leaderName });
+      try {
+        const response = await axiosInstance.get(
+          `report/download/group?filter=${filterParam}&group_id=${groupParam}${sabhaIdsParam}`,
+          { responseType: "blob" },
+        );
+        const safeName =
+          leaderName
+            .replace(/[\\/:*?"<>|]/g, "_")
+            .replace(/\s+/g, " ")
+            .trim() || `group_${groupParam}`;
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${safeName}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      } catch {
+        // Skip groups with no data (the per-group endpoint returns 400 when empty).
+      }
+      // brief pause so the browser doesn't block rapid successive downloads
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    setSepProgress(null);
   };
 
   // Download the attendance report for a single poshak group (current filter).
@@ -245,11 +311,50 @@ export default function Report() {
         title: "Report",
         children: (
           <div className="flex justify-center items-center gap-4 pr-3">
-            <Download
-              size={22}
-              className="text-white"
-              onClick={handleDownLoadClick}
-            />
+            {activeTab === "by-group" ? (
+              <Popover open={dlMenuOpen} onOpenChange={setDlMenuOpen}>
+                <PopoverTrigger asChild>
+                  <button type="button" aria-label="Download options">
+                    <Download size={22} className="text-white" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-60 p-1 text-textColor">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDlMenuOpen(false);
+                      handleDownLoadClick();
+                    }}
+                    className="w-full flex flex-col items-start rounded-md px-3 py-2 hover:bg-gray-100 text-left"
+                  >
+                    <span className="text-sm font-medium">Download One</span>
+                    <span className="text-xs text-textLightColor">
+                      All groups in a single file
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!!sepProgress}
+                    onClick={() => {
+                      setDlMenuOpen(false);
+                      handleDownloadSeparate();
+                    }}
+                    className="w-full flex flex-col items-start rounded-md px-3 py-2 hover:bg-gray-100 text-left disabled:opacity-50"
+                  >
+                    <span className="text-sm font-medium">Download Separate</span>
+                    <span className="text-xs text-textLightColor">
+                      One Excel file per group
+                    </span>
+                  </button>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Download
+                size={22}
+                className="text-white"
+                onClick={handleDownLoadClick}
+              />
+            )}
 
             {/* Drawer For Filters */}
             <Drawer>
@@ -357,6 +462,28 @@ export default function Report() {
         },
       }}
     >
+      {/* Download Separate progress */}
+      {sepProgress && (
+        <div className="sticky top-0 z-30 bg-white border-b border-borderColor px-4 py-2">
+          <div className="flex justify-between items-center text-sm text-textColor mb-1">
+            <span className="truncate">
+              Downloading: {sepProgress.label || "…"}
+            </span>
+            <span className="shrink-0 ml-2">
+              {sepProgress.current}/{sepProgress.total}
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primaryColor transition-all duration-300"
+              style={{
+                width: `${(sepProgress.current / sepProgress.total) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* TABS */}
       <Tabs
         value={activeTab}
