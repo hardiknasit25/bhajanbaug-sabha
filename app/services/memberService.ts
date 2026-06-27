@@ -115,6 +115,16 @@ export const memberService = {
     }
   },
 
+  //#region get upcoming birthday wishes for the home page
+  getWishes: async () => {
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.MEMBERS.WISHES);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   //#region download the import template (.xlsx)
   downloadTemplate: async () => {
     const response = await axiosInstance.get(API_ENDPOINTS.MEMBERS.TEMPLATE, {

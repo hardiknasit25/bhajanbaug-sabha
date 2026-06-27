@@ -1,6 +1,10 @@
+import { useEffect, useState } from "react";
 import { redirect, type LoaderFunctionArgs, type MetaArgs } from "react-router";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
+import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import WishesCard from "~/components/shared-component/WishesCard";
+import { memberService } from "~/services/memberService";
+import type { Wish } from "~/types/wishes.interface";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
@@ -21,6 +25,27 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function Home() {
+  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    memberService
+      .getWishes()
+      .then((res) => {
+        if (active) setWishes(res?.data ?? []);
+      })
+      .catch(() => {
+        if (active) setWishes([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <LayoutWrapper
       headerConfigs={{
@@ -36,11 +61,19 @@ export default function Home() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {Array.from({ length: 30 }).map((_, index) => (
-          <WishesCard key={index} />
-        ))}
-      </div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : wishes.length === 0 ? (
+        <div className="mt-6 text-center text-textLightColor">
+          No upcoming birthdays
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {wishes.map((wish) => (
+            <WishesCard key={`${wish.type}-${wish.id}`} wish={wish} />
+          ))}
+        </div>
+      )}
     </LayoutWrapper>
   );
 }

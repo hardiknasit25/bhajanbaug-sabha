@@ -8,6 +8,8 @@ export const API_ENDPOINTS = {
     IMPORT: "user/import",
     EXPORT: "user/export/data",
     TEMPLATE: "user/export/template",
+
+    WISHES: "user/wishes",
   },
 
   SABHA: {
