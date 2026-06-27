@@ -465,72 +465,79 @@ export default function EventAttendance() {
         onSearchChange: setSabhaMemberSearchText,
       }}
     >
-      {/* Summary Counts */}
-      <div className="flex justify-around items-center p-2 shadow-sm">
-        <div
-          className="flex flex-col items-center cursor-pointer"
-          onClick={async () => {
-            await syncAttendance();
-            const newFilter = userFilter === "present" ? undefined : "present";
-            setUserFilter(newFilter);
-            fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
-          }}
-        >
-          <span className="text-3xl text-green-500 font-medium font-poppins">
-            {totalPresentOnSelectedSabha}
-          </span>
-          <span className="text-base text-textColor font-medium font-poppins">
-            Present
-          </span>
+      {/* Single scroll area: header summary stays fixed, only the list scrolls. */}
+      <div className="flex h-full flex-col">
+        {/* Summary Counts */}
+        <div className="flex shrink-0 justify-around items-center p-2 shadow-sm">
+          <div
+            className="flex flex-col items-center cursor-pointer"
+            onClick={async () => {
+              await syncAttendance();
+              const newFilter =
+                userFilter === "present" ? undefined : "present";
+              setUserFilter(newFilter);
+              fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
+            }}
+          >
+            <span className="text-3xl text-green-500 font-medium font-poppins">
+              {totalPresentOnSelectedSabha}
+            </span>
+            <span className="text-base text-textColor font-medium font-poppins">
+              Present
+            </span>
+          </div>
+
+          <div
+            className="flex flex-col items-center cursor-pointer"
+            onClick={async () => {
+              await syncAttendance();
+              const newFilter = userFilter === "absent" ? undefined : "absent";
+              setUserFilter(newFilter);
+              fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
+            }}
+          >
+            <span className="text-3xl text-red-500 font-medium font-poppins">
+              {selectedSabha?.status !== "completed"
+                ? totalAbsentOnSelectedSabha
+                : totalMembersOnSelectedSabha - totalPresentOnSelectedSabha}
+            </span>
+            <span className="text-base text-textColor font-medium font-poppins">
+              Absent
+            </span>
+          </div>
         </div>
 
-        <div
-          className="flex flex-col items-center cursor-pointer"
-          onClick={async () => {
-            await syncAttendance();
-            const newFilter = userFilter === "absent" ? undefined : "absent";
-            setUserFilter(newFilter);
-            fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
-          }}
-        >
-          <span className="text-3xl text-red-500 font-medium font-poppins">
-            {selectedSabha?.status !== "completed"
-              ? totalAbsentOnSelectedSabha
-              : totalMembersOnSelectedSabha - totalPresentOnSelectedSabha}
-          </span>
-          <span className="text-base text-textColor font-medium font-poppins">
-            Absent
-          </span>
+        {/* Members List (the only scroll container) */}
+        <div className="min-h-0 flex-1">
+          {loading && sabhaMembers.length === 0 ? (
+            <LoadingSpinner />
+          ) : (
+            <Virtuoso
+              className="h-full"
+              totalCount={filteredSabhaMembers.length}
+              itemContent={(index) => {
+                const member = filteredSabhaMembers[index];
+                return (
+                  <MemberListCard
+                    key={member.id}
+                    member={member}
+                    from="attendance"
+                    selectedSabha={selectedSabha}
+                  />
+                );
+              }}
+              components={{
+                Footer: () =>
+                  sabhaMembers.length === 0 ? (
+                    <div className="text-center text-textLightColor mt-2">
+                      No members found
+                    </div>
+                  ) : null,
+              }}
+            />
+          )}
         </div>
       </div>
-
-      {/* Members List */}
-      {loading && sabhaMembers.length === 0 ? (
-        <LoadingSpinner />
-      ) : (
-        <Virtuoso
-          totalCount={filteredSabhaMembers.length}
-          itemContent={(index) => {
-            const member = filteredSabhaMembers[index];
-            return (
-              <MemberListCard
-                key={member.id}
-                member={member}
-                from="attendance"
-                selectedSabha={selectedSabha}
-              />
-            );
-          }}
-          components={{
-            Footer: () =>
-              sabhaMembers.length === 0 ? (
-                <div className="text-center text-textLightColor mt-2">
-                  No members found
-                </div>
-              ) : null,
-          }}
-        />
-      )}
 
       {/* Universal Dialog */}
       <Dialog
