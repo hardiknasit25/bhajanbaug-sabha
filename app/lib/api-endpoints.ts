@@ -29,4 +29,16 @@ export const API_ENDPOINTS = {
   GROUPS: {
     SELECT: "poshak-group/select",
   },
+
+  ROLE: {
+    BASE: "role",
+    SELECT: "role/select",
+  },
+
+  PERMISSION: {
+    BASE: "permission",
+    MY: "permission/my",
+    CHANGE_ALL: "permission/all",
+    BY_ROLE: "permission/role",
+  },
 };
