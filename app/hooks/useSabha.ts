@@ -39,8 +39,8 @@ export const useSabha = () => {
   const thunks = {
     fetchSabhaList: (sabha_status: string) =>
       dispatch(fetchSabhaList(sabha_status)),
-    fetchSabhaById: (sabhaId: number, user?: string) =>
-      dispatch(fetchSabhaById({ sabhaId, user })),
+    fetchSabhaById: (sabhaId: number, user?: string, groupId?: number | null) =>
+      dispatch(fetchSabhaById({ sabhaId, user, groupId })),
     syncSabhaAttendance: (sabhaId: number) =>
       dispatch(syncSabhaAttendance(sabhaId)),
     startSabha: (sabhaId: number) => dispatch(startSabha(sabhaId)),

@@ -20,13 +20,19 @@ export const sabhaService = {
   },
 
   //#region fetch sabha by id
-  getSabhaById: async (sabhaId: number, user?: string) => {
+  getSabhaById: async (
+    sabhaId: number,
+    user?: string,
+    groupId?: number | null,
+  ) => {
     try {
       const params: Record<string, string> = {};
       if (user) {
         params.user = user;
       }
-      console.log("params: ", params);
+      if (groupId) {
+        params.group_id = String(groupId);
+      }
       const response = await axiosInstance.get(
         `${API_ENDPOINTS.SABHA.BASE}/${sabhaId}`,
         { params },

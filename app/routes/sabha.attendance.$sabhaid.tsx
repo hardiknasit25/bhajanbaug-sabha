@@ -1,4 +1,4 @@
-import { RotateCcw, Send } from "lucide-react";
+import { Check, MoreVertical, RotateCcw, Search, Send, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   redirect,
@@ -20,7 +20,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
+import { useMembers } from "~/hooks/useMembers";
 import { useSabha } from "~/hooks/useSabha";
 import { localJsonStorageService } from "~/lib/localStorage";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
@@ -69,13 +75,28 @@ export default function EventAttendance() {
     searchText,
     totalPresentOnSelectedSabha,
     totalAbsentOnSelectedSabha,
+    totalMembersOnSelectedSabha,
     fetchSabhaById,
     setSabhaMemberSearchText,
     submitSabhaReport,
     syncSabhaAttendance,
   } = useSabha();
+  const { groupSelect, fetchGroupSelect } = useMembers();
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const [userFilter, setUserFilter] = useState<string | undefined>(undefined);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [groupMenuOpen, setGroupMenuOpen] = useState(false);
+  const [groupSearch, setGroupSearch] = useState("");
+
+  // Filter the group list by leader / group name for the group-wise menu.
+  const normalizedGroupSearch = groupSearch.trim().toLowerCase();
+  const filteredGroups = normalizedGroupSearch
+    ? groupSelect.filter(
+        (g) =>
+          g.leader_name?.toLowerCase().includes(normalizedGroupSearch) ||
+          g.group_name?.toLowerCase().includes(normalizedGroupSearch),
+      )
+    : groupSelect;
 
   const [dialog, setDialog] = useState<DialogState>({
     open: false,
@@ -85,7 +106,14 @@ export default function EventAttendance() {
   });
 
   const fetchSabhaMembers = () => {
-    fetchSabhaById(Number(sabhaId), userFilter);
+    fetchSabhaById(Number(sabhaId), userFilter, selectedGroupId);
+  };
+
+  // Apply the "group wise" filter — null means all members.
+  const handleSelectGroup = (groupId: number | null) => {
+    setSelectedGroupId(groupId);
+    setGroupMenuOpen(false);
+    fetchSabhaById(Number(sabhaId), userFilter, groupId);
   };
 
   const checkPendingChanges = () => {
@@ -116,7 +144,7 @@ export default function EventAttendance() {
     localJsonStorageService.setItem(PRESENT_MEMBER, []);
     localJsonStorageService.setItem(ABSENT_MEMBER, []);
 
-    fetchSabhaById(Number(sabhaId), userFilter);
+    fetchSabhaById(Number(sabhaId), userFilter, selectedGroupId);
 
     openDialog(
       "Synced Successfully!",
@@ -187,6 +215,11 @@ export default function EventAttendance() {
   useEffect(() => {
     fetchSabhaMembers();
   }, [sabhaId]);
+
+  // Load the poshak groups for the "group wise" filter menu.
+  useEffect(() => {
+    fetchGroupSelect();
+  }, []);
 
   // useEffect(() => {
   //   if (!hasPendingChanges) {
@@ -330,6 +363,98 @@ export default function EventAttendance() {
                 className="cursor-pointer"
               />
             )}
+
+            {/* Group-wise filter */}
+            <Popover
+              open={groupMenuOpen}
+              onOpenChange={(open) => {
+                setGroupMenuOpen(open);
+                if (!open) setGroupSearch("");
+              }}
+            >
+              <PopoverTrigger asChild>
+                <div className="relative cursor-pointer">
+                  <MoreVertical size={22} />
+                  {selectedGroupId !== null && (
+                    <span className="absolute -top-0 right-0 h-2 w-2 rounded-full bg-selectionColor"></span>
+                  )}
+                </div>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64 p-0">
+                <div className="border-b border-borderColor px-3 py-2 text-xs font-semibold uppercase tracking-wider text-textLightColor">
+                  Group wise
+                </div>
+
+                {/* Search */}
+                <div className="border-b border-borderColor p-2">
+                  <div className="flex items-center gap-2 rounded-md border border-borderColor px-2">
+                    <Search size={16} className="text-textLightColor" />
+                    <input
+                      type="text"
+                      value={groupSearch}
+                      onChange={(e) => setGroupSearch(e.target.value)}
+                      placeholder="Search group..."
+                      className="h-8 w-full bg-transparent text-sm text-textColor outline-none placeholder:text-textLightColor"
+                    />
+                    {groupSearch && (
+                      <X
+                        size={14}
+                        onClick={() => setGroupSearch("")}
+                        className="cursor-pointer text-textLightColor"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* List */}
+                <div className="max-h-64 overflow-y-auto">
+                  {!normalizedGroupSearch && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectGroup(null)}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm text-textColor hover:bg-gray-100"
+                    >
+                      <span>All Members</span>
+                      {selectedGroupId === null && (
+                        <Check size={16} className="text-selectionColor" />
+                      )}
+                    </button>
+                  )}
+
+                  {filteredGroups.map((group) => (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => handleSelectGroup(group.id)}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm text-textColor hover:bg-gray-100"
+                    >
+                      <span className="flex flex-col">
+                        <span className="capitalize">
+                          {group.leader_name || group.group_name}
+                        </span>
+                        {group.group_name && group.leader_name && (
+                          <span className="text-xs text-textLightColor">
+                            {group.group_name}
+                          </span>
+                        )}
+                      </span>
+                      {selectedGroupId === group.id && (
+                        <Check
+                          size={16}
+                          className="shrink-0 text-selectionColor"
+                        />
+                      )}
+                    </button>
+                  ))}
+
+                  {filteredGroups.length === 0 && (
+                    <div className="px-3 py-3 text-center text-xs text-textLightColor">
+                      No groups found
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         ),
         className: "flex-col gap-2",
@@ -348,7 +473,7 @@ export default function EventAttendance() {
             await syncAttendance();
             const newFilter = userFilter === "present" ? undefined : "present";
             setUserFilter(newFilter);
-            fetchSabhaById(Number(sabhaId), newFilter);
+            fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
           }}
         >
           <span className="text-3xl text-green-500 font-medium font-poppins">
@@ -365,13 +490,13 @@ export default function EventAttendance() {
             await syncAttendance();
             const newFilter = userFilter === "absent" ? undefined : "absent";
             setUserFilter(newFilter);
-            fetchSabhaById(Number(sabhaId), newFilter);
+            fetchSabhaById(Number(sabhaId), newFilter, selectedGroupId);
           }}
         >
           <span className="text-3xl text-red-500 font-medium font-poppins">
             {selectedSabha?.status !== "completed"
               ? totalAbsentOnSelectedSabha
-              : sabhaMembers.length - totalPresentOnSelectedSabha}
+              : totalMembersOnSelectedSabha - totalPresentOnSelectedSabha}
           </span>
           <span className="text-base text-textColor font-medium font-poppins">
             Absent

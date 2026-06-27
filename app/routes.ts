@@ -20,4 +20,8 @@
 import { type RouteConfig } from "@react-router/dev/routes";
 import { flatRoutes } from "@react-router/fs-routes";
 
-export default flatRoutes() satisfies RouteConfig;
+// Ignore editor/atomic-write temp files so a temp file flashing into app/routes/
+// (e.g. "*.tsx.tmp.1234") is never indexed as a route by the dev watcher.
+export default flatRoutes({
+  ignoredRouteFiles: ["**/*.tmp.*", "**/*~", "**/.*"],
+}) satisfies RouteConfig;

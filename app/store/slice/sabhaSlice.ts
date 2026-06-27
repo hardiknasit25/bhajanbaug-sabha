@@ -20,6 +20,7 @@ interface SabhaState {
   selectedSabha: SabhaData | null;
   totalPresentOnSelectedSabha: number;
   totalAbsentOnSelectedSabha: number;
+  totalMembersOnSelectedSabha: number;
   sabhaFormDialog: boolean;
   searchText: string;
   totalSabha: number;
@@ -33,6 +34,7 @@ const initialState: SabhaState = {
   selectedSabha: null,
   totalPresentOnSelectedSabha: 0,
   totalAbsentOnSelectedSabha: 0,
+  totalMembersOnSelectedSabha: 0,
   sabhaFormDialog: false,
   searchText: "",
   totalSabha: 0,
@@ -58,15 +60,20 @@ export const fetchSabhaList = createAsyncThunk(
 export const fetchSabhaById = createAsyncThunk(
   "sabha/fetchSabhaById",
   async (
-    { sabhaId, user }: { sabhaId: number; user?: string },
+    {
+      sabhaId,
+      user,
+      groupId,
+    }: { sabhaId: number; user?: string; groupId?: number | null },
     { rejectWithValue },
   ) => {
     try {
-      const response = await sabhaService.getSabhaById(sabhaId, user);
+      const response = await sabhaService.getSabhaById(sabhaId, user, groupId);
       return response.data as {
         sabha: SabhaData;
         total_present: number;
         total_absent: number;
+        total_members: number;
         users: MemberData[];
       };
     } catch (error) {
@@ -300,6 +307,7 @@ const sabhaSlice = createSlice({
             sabha: SabhaData;
             total_present: number;
             total_absent: number;
+            total_members: number;
             users: MemberData[];
           }>,
         ) => {
@@ -308,6 +316,7 @@ const sabhaSlice = createSlice({
           state.sabhaMembers = action.payload.users;
           state.totalPresentOnSelectedSabha = action.payload.total_present;
           state.totalAbsentOnSelectedSabha = action.payload.total_absent;
+          state.totalMembersOnSelectedSabha = action.payload.total_members;
         },
       )
 
