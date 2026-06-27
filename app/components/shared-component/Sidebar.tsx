@@ -1,15 +1,35 @@
 import { KeyRound, LogOut, ShieldCheck, User } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { AUTH_TOKEN } from "~/constant/constant";
 import { useMyPermissions } from "~/hooks/usePermissions";
 import sessionStorageService from "~/lib/sessionStorage";
+import { authService } from "~/services/authService";
 import { cn } from "~/lib/utils";
+import type { UserProfile } from "~/types/auth.interface";
 import { deleteCookie } from "~/utils/cookie";
 import { SheetClose } from "../ui/sheet";
 
 function Sidebar() {
   const navigate = useNavigate();
   const { can } = useMyPermissions();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  // Load the logged-in user's profile for the drawer header.
+  useEffect(() => {
+    let active = true;
+    authService
+      .getMe()
+      .then((res) => {
+        if (active) setProfile(res?.data ?? null);
+      })
+      .catch(() => {
+        if (active) setProfile(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleLogOut = () => {
     deleteCookie(AUTH_TOKEN);
@@ -45,9 +65,11 @@ function Sidebar() {
         />
         <div className="flex flex-col items-center justify-center gap-1">
           <span className="font-poppins text-lg font-medium uppercase text-textColor">
-            harikrushnabhai vaghasiya
+            {profile?.name || "—"}
           </span>
-          <span className="text-textLightColor">SMK Id: 24514</span>
+          <span className="text-textLightColor">
+            SMK Id: {profile?.smk_no || "—"}
+          </span>
         </div>
       </div>
 
