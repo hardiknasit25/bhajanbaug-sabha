@@ -7,6 +7,7 @@ import {
   doMemberPresent,
   fetchSabhaById,
   fetchSabhaList,
+  markMemberPresent,
   openSabhaFormDialog,
   selectFilteredSabhaMembers,
   setLoading,
@@ -43,6 +44,8 @@ export const useSabha = () => {
       dispatch(fetchSabhaById({ sabhaId, user, groupId })),
     syncSabhaAttendance: (sabhaId: number) =>
       dispatch(syncSabhaAttendance(sabhaId)),
+    markMemberPresent: (sabhaId: number, userId: number) =>
+      dispatch(markMemberPresent({ sabhaId, userId })),
     startSabha: (sabhaId: number) => dispatch(startSabha(sabhaId)),
     submitSabhaReport: (sabhaId: number) =>
       dispatch(submitSabhaReport(sabhaId)),

@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
     IMPORT: "user/import",
     EXPORT: "user/export/data",
     TEMPLATE: "user/export/template",
+    QR: "user/export/qr",
 
     WISHES: "user/wishes",
   },

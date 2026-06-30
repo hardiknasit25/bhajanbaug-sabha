@@ -5,6 +5,7 @@ import {
   Download,
   FileDown,
   MoreVertical,
+  QrCode,
   Upload,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -45,9 +46,9 @@ function triggerDownload(blob: Blob, filename: string) {
 function MemberBulkActions({ onImported }: { onImported?: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [busy, setBusy] = useState<"template" | "export" | "import" | null>(
-    null,
-  );
+  const [busy, setBusy] = useState<
+    "template" | "export" | "import" | "qr" | null
+  >(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
@@ -75,6 +76,23 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
       triggerDownload(blob, "members_export.xlsx");
     } catch (e: any) {
       setErrorMsg(e?.message || "Failed to export members");
+      setResult(null);
+      setResultOpen(true);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDownloadQr = async () => {
+    setMenuOpen(false);
+    try {
+      setBusy("qr");
+      const blob = await memberService.downloadQrCodes();
+      triggerDownload(blob, "member_qr_codes.pdf");
+    } catch (e: any) {
+      setErrorMsg(
+        e?.response?.data?.message || e?.message || "Failed to download QR codes",
+      );
       setResult(null);
       setResultOpen(true);
     } finally {
@@ -148,6 +166,14 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
           >
             <Download size={18} className="text-primaryColor" />
             <span>Export members</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadQr}
+            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-gray-100 text-left"
+          >
+            <QrCode size={18} className="text-primaryColor" />
+            <span>Download QR codes</span>
           </button>
           <button
             type="button"

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaArgs,
@@ -13,6 +13,8 @@ import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useMembers } from "~/hooks/useMembers";
+import { memberService } from "~/services/memberService";
+import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
@@ -51,6 +53,13 @@ export default function Members() {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get("tab") as MemberTabs) || "all-members";
 
+  // Progress for the per-group "separate QR codes" download (one PDF per member).
+  const [qrProgress, setQrProgress] = useState<{
+    current: number;
+    total: number;
+    label: string;
+  } | null>(null);
+
   // --------------------------
   // FETCH MEMBERS BASED ON TAB
   // --------------------------
@@ -77,6 +86,42 @@ export default function Members() {
   // --------------------------
   const handleSearchChange = (value: string) => {
     setSearchText(value);
+  };
+
+  // Download a SEPARATE QR PDF for each member of a poshak group (one file per
+  // member, not a single combined PDF). groupId is null for the "Others" bucket.
+  const handleGroupQrDownload = async (
+    groupId: number | null,
+    leaderName: string,
+  ) => {
+    if (qrProgress) return; // a download run is already in progress
+    const group = filteredMembersByPoshakGroups.find(
+      (g) => (g.group_id ?? null) === groupId,
+    );
+    const users = group?.users ?? [];
+    if (users.length === 0) return;
+
+    setQrProgress({ current: 0, total: users.length, label: leaderName });
+    for (let i = 0; i < users.length; i++) {
+      const u = users[i];
+      const memberName = `${u.first_name ?? ""} ${u.last_name ?? ""}`
+        .replace(/\s+/g, " ")
+        .trim();
+      setQrProgress({
+        current: i + 1,
+        total: users.length,
+        label: memberName || `Member #${u.id}`,
+      });
+      try {
+        const blob = await memberService.downloadQrCode(u.id);
+        downloadBlob(blob, `qr_${safeFileName(memberName, `member_${u.id}`)}.pdf`);
+      } catch (error) {
+        console.error(`Failed to download QR for member ${u.id}`, error);
+      }
+      // Small gap so the browser doesn't block rapid successive downloads.
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    setQrProgress(null);
   };
 
   return (
@@ -137,6 +182,28 @@ export default function Members() {
 
         {/* Poshak Group */}
         <TabsContent value="by-group" className="h-full w-full overflow-hidden">
+          {/* Separate-QR download progress */}
+          {qrProgress && (
+            <div className="border-b border-borderColor bg-white px-4 py-2">
+              <div className="mb-1 flex items-center justify-between text-sm text-textColor">
+                <span className="truncate">
+                  Downloading QR: {qrProgress.label || "…"}
+                </span>
+                <span className="ml-2 shrink-0">
+                  {qrProgress.current}/{qrProgress.total}
+                </span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                <div
+                  className="h-full bg-primaryColor transition-all duration-300"
+                  style={{
+                    width: `${(qrProgress.current / qrProgress.total) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <LoadingSpinner />
           ) : filteredMembersByPoshakGroups.length === 0 ? (
@@ -147,6 +214,8 @@ export default function Members() {
             <GroupAccordionMember
               groupData={filteredMembersByPoshakGroups}
               from="members"
+              showDownload={true}
+              onDownloadGroup={handleGroupQrDownload}
             />
           )}
         </TabsContent>

@@ -1,4 +1,5 @@
-import { ChartColumn, Check, Percent, X } from "lucide-react";
+import { ChartColumn, Check, Percent, QrCode, X } from "lucide-react";
+import { useState } from "react";
 import type { MemberData } from "~/types/members.interface";
 import ImageComponent from "./ImageComponent";
 import { useNavigate } from "react-router";
@@ -9,6 +10,8 @@ import { doMemberPresent, doMemberAbsent } from "~/store/slice/sabhaSlice";
 import type { SabhaData } from "~/types/sabha.interface";
 import { localJsonStorageService } from "~/lib/localStorage";
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
+import { memberService } from "~/services/memberService";
+import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
 
 function MemberListCard({
   member,
@@ -23,6 +26,27 @@ function MemberListCard({
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [qrBusy, setQrBusy] = useState(false);
+
+  // Download this member's QR card (PDF). Stops propagation so the card's
+  // navigate-to-details click doesn't fire.
+  const handleDownloadQr = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (qrBusy) return;
+    setQrBusy(true);
+    try {
+      const blob = await memberService.downloadQrCode(member.id);
+      const name = safeFileName(
+        `${member.first_name ?? ""} ${member.last_name ?? ""}`,
+        `member_${member.id}`,
+      );
+      downloadBlob(blob, `qr_${name}.pdf`);
+    } catch (err) {
+      console.error("Failed to download member QR", err);
+    } finally {
+      setQrBusy(false);
+    }
+  };
 
   const handlePresentClick = (id: number) => {
     // Dispatch directly so each card does NOT subscribe to the whole sabha slice.
@@ -151,6 +175,19 @@ function MemberListCard({
           </div>
         )}
       </div>
+
+      {/* Per-member QR download (members list / poshak-group list). */}
+      {from === "members" && (
+        <button
+          type="button"
+          onClick={handleDownloadQr}
+          disabled={qrBusy}
+          aria-label="Download member QR code"
+          className="shrink-0 self-center rounded-full p-2 text-primaryColor hover:bg-gray-100 disabled:opacity-50"
+        >
+          <QrCode size={20} />
+        </button>
+      )}
       <Separator
         orientation="vertical"
         className="absolute bg-borderColor/30 w-[95%] h-[1px] bottom-0 left-1/2 right-1/2 translate-x-[-50%]"

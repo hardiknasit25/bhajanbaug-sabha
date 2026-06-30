@@ -1,5 +1,13 @@
-import { Check, MoreVertical, RotateCcw, Search, Send, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  Check,
+  MoreVertical,
+  RotateCcw,
+  ScanLine,
+  Search,
+  Send,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
   redirect,
   useLoaderData,
@@ -12,6 +20,7 @@ import { Virtuoso } from "react-virtuoso";
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
+import QrScanner from "~/components/shared-component/QrScanner";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -25,7 +34,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
+import {
+  ABSENT_MEMBER,
+  MEMBER_QR_PREFIX,
+  PRESENT_MEMBER,
+} from "~/constant/constant";
 import { useMembers } from "~/hooks/useMembers";
 import { useSabha } from "~/hooks/useSabha";
 import { localJsonStorageService } from "~/lib/localStorage";
@@ -80,6 +93,7 @@ export default function EventAttendance() {
     setSabhaMemberSearchText,
     submitSabhaReport,
     syncSabhaAttendance,
+    markMemberPresent,
   } = useSabha();
   const { groupSelect, fetchGroupSelect } = useMembers();
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
@@ -104,6 +118,55 @@ export default function EventAttendance() {
     message: "",
     buttons: [],
   });
+
+  // QR scanner (mark present by scanning a member's QR code).
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanResult, setScanResult] = useState<{
+    ok: boolean;
+    message: string;
+  } | null>(null);
+  // Guards against firing multiple present requests while one is in flight.
+  const scanBusyRef = useRef(false);
+
+  const handleQrDecoded = async (decodedText: string) => {
+    const text = (decodedText || "").trim();
+    if (!text.startsWith(MEMBER_QR_PREFIX)) {
+      setScanResult({
+        ok: false,
+        message: "Unrecognized QR code. Please scan a member QR.",
+      });
+      return;
+    }
+    const memberId = Number(text.slice(MEMBER_QR_PREFIX.length));
+    if (!memberId || Number.isNaN(memberId)) {
+      setScanResult({ ok: false, message: "Invalid member QR code." });
+      return;
+    }
+    if (scanBusyRef.current) return;
+    scanBusyRef.current = true;
+    try {
+      const payload = await markMemberPresent(Number(sabhaId), memberId).unwrap();
+      const u = payload.users?.find((m) => m.id === memberId);
+      const name = u
+        ? `${u.first_name} ${u.middle_name ?? ""} ${u.last_name ?? ""}`
+            .replace(/\s+/g, " ")
+            .trim()
+        : `Member #${memberId}`;
+      setScanResult({ ok: true, message: `${name} is present` });
+    } catch {
+      setScanResult({
+        ok: false,
+        message: "Could not mark present. Please try again.",
+      });
+    } finally {
+      scanBusyRef.current = false;
+    }
+  };
+
+  const openScanner = () => {
+    setScanResult(null);
+    setScanOpen(true);
+  };
 
   const fetchSabhaMembers = () => {
     fetchSabhaById(Number(sabhaId), userFilter, selectedGroupId);
@@ -364,6 +427,14 @@ export default function EventAttendance() {
               />
             )}
 
+            {/* Scan QR to mark present */}
+            <ScanLine
+              size={22}
+              onClick={openScanner}
+              className="cursor-pointer"
+              aria-label="Scan QR code"
+            />
+
             {/* Group-wise filter */}
             <Popover
               open={groupMenuOpen}
@@ -564,6 +635,49 @@ export default function EventAttendance() {
                 {btn.label}
               </Button>
             ))}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* QR Scanner Dialog */}
+      <Dialog
+        open={scanOpen}
+        onOpenChange={(v) => {
+          setScanOpen(v);
+          if (!v) setScanResult(null);
+        }}
+      >
+        <DialogContent className="rounded-none">
+          <DialogHeader>
+            <DialogTitle className="text-textColor font-semibold">
+              Scan Member QR
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Mounting only while open starts/stops the camera with the dialog. */}
+          {scanOpen && <QrScanner onScan={handleQrDecoded} />}
+
+          {/* Simple result message shown below the scanner. */}
+          {scanResult && (
+            <p
+              className={
+                scanResult.ok
+                  ? "mt-3 rounded-md bg-green-100 px-3 py-2 text-center text-sm font-medium text-green-700"
+                  : "mt-3 rounded-md bg-red-100 px-3 py-2 text-center text-sm font-medium text-red-700"
+              }
+            >
+              {scanResult.ok ? `✓ ${scanResult.message}` : scanResult.message}
+            </p>
+          )}
+
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setScanOpen(false)}
+            >
+              Done
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
