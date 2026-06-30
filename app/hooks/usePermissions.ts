@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   changeAllPermissions,
@@ -22,6 +22,14 @@ export const usePermissions = () => {
   const ensureMyPermissions = useCallback(() => {
     if (!myLoaded) dispatch(fetchMyPermissions());
   }, [dispatch, myLoaded]);
+
+  // Whether the user's role has a permission row for this module — i.e. the
+  // module is "defined" for them. GET /permission/my only returns modules the
+  // role was assigned, so an absent module means "not configured yet".
+  const hasModule = useCallback(
+    (moduleKey: string) => myPermissions.some((p) => p.module_key === moduleKey),
+    [myPermissions]
+  );
 
   // True when the user is allowed to perform `action` on `moduleKey`.
   const can = useCallback(
@@ -54,6 +62,7 @@ export const usePermissions = () => {
 
     // gating helpers
     can,
+    hasModule,
     ensureMyPermissions,
 
     // thunks
@@ -76,4 +85,28 @@ export const useMyPermissions = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return api;
+};
+
+/**
+ * Convenience hook for gating a single module's UI. Ensures the permission map
+ * is loaded and returns ready-to-use booleans for each action, e.g.:
+ *
+ *   const { canCreate, canUpdate } = usePermission("user");
+ */
+export const usePermission = (moduleKey: string) => {
+  const { can, myLoaded, myLoading } = useMyPermissions();
+  return useMemo(
+    () => ({
+      canSelect: can(moduleKey, "select"),
+      canRead: can(moduleKey, "read"),
+      canCreate: can(moduleKey, "create"),
+      canUpdate: can(moduleKey, "update"),
+      canDelete: can(moduleKey, "delete"),
+      canPublish: can(moduleKey, "publish"),
+      // True once the map has been fetched (use to avoid hiding UI mid-load).
+      loaded: myLoaded,
+      loading: myLoading,
+    }),
+    [can, moduleKey, myLoaded, myLoading]
+  );
 };

@@ -14,9 +14,12 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 interface RoleFormProps {
   mode?: "create" | "update";
   initialData?: Role;
+  // When provided, called after a successful save instead of navigating to
+  // /role — lets the form be reused inside a dialog (e.g. the Roles tab).
+  onSuccess?: () => void;
 }
 
-function RoleForm({ mode = "create", initialData }: RoleFormProps) {
+function RoleForm({ mode = "create", initialData, onSuccess }: RoleFormProps) {
   const navigate = useNavigate();
   const { createRole, updateRole } = useRoles();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -50,7 +53,8 @@ function RoleForm({ mode = "create", initialData }: RoleFormProps) {
       } else if (initialData) {
         await updateRole(initialData.id, payload).unwrap();
       }
-      navigate("/role");
+      if (onSuccess) onSuccess();
+      else navigate("/role");
     } catch (error) {
       setServerError(
         typeof error === "string"

@@ -44,6 +44,10 @@ export const API_ENDPOINTS = {
     SELECT: "role/select",
   },
 
+  MODULE: {
+    BASE: "module",
+  },
+
   PERMISSION: {
     BASE: "permission",
     MY: "permission/my",

@@ -40,11 +40,11 @@ function Sidebar() {
   // Gated management links (only shown when the user can read that module).
   const managementItems = [
     {
-      key: "role",
-      label: "User Role",
+      key: "management",
+      label: "Roles & Modules",
       icon: ShieldCheck,
-      onClick: () => navigate("/role"),
-      visible: can("role", "read"),
+      onClick: () => navigate("/management"),
+      visible: can("role", "read") || can("module", "read"),
     },
     {
       key: "permission",

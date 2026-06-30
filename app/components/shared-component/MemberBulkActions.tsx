@@ -19,6 +19,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { memberService } from "~/services/memberService";
+import { usePermission } from "~/hooks/usePermissions";
 
 interface ImportFailure {
   row: number;
@@ -44,6 +45,8 @@ function triggerDownload(blob: Blob, filename: string) {
 }
 
 function MemberBulkActions({ onImported }: { onImported?: () => void }) {
+  // Gate member management actions by the "user" module permission.
+  const { canRead, canCreate } = usePermission("user");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState<
@@ -131,11 +134,14 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
   return (
     <div className="flex items-center gap-3">
       {/* Add member */}
-      <Link to="/members/create-member" aria-label="Add member">
-        <CirclePlus size={25} />
-      </Link>
+      {canCreate && (
+        <Link to="/members/create-member" aria-label="Add member">
+          <CirclePlus size={25} />
+        </Link>
+      )}
 
       {/* Bulk actions menu */}
+      {canRead && (
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <PopoverTrigger asChild>
           <button
@@ -175,16 +181,19 @@ function MemberBulkActions({ onImported }: { onImported?: () => void }) {
             <QrCode size={18} className="text-primaryColor" />
             <span>Download QR codes</span>
           </button>
-          <button
-            type="button"
-            onClick={handleImportClick}
-            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-gray-100 text-left"
-          >
-            <Upload size={18} className="text-primaryColor" />
-            <span>Import members</span>
-          </button>
+          {canCreate && (
+            <button
+              type="button"
+              onClick={handleImportClick}
+              className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-gray-100 text-left"
+            >
+              <Upload size={18} className="text-primaryColor" />
+              <span>Import members</span>
+            </button>
+          )}
         </PopoverContent>
       </Popover>
+      )}
 
       {/* Hidden file input for import */}
       <input

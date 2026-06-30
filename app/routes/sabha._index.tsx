@@ -13,6 +13,7 @@ import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useSabha } from "~/hooks/useSabha";
+import { useMyPermissions } from "~/hooks/usePermissions";
 import { cn } from "~/lib/utils";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
@@ -39,10 +40,28 @@ export default function Sabha() {
   } = useSabha();
 
   // --------------------------
+  // PERMISSIONS (gate each sub-tab by its own module)
+  // --------------------------
+  const { can, myLoaded } = useMyPermissions();
+  // Permissive until the map loads, then strictly gated by the module.
+  const canUpcoming = !myLoaded || can("upcoming_sabha", "read");
+  const canCompleted = !myLoaded || can("completed_sabha", "read");
+
+  // --------------------------
   // SEARCH PARAMS
   // --------------------------
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get("tab") as SabhaTabs) || "upcoming-sabha";
+  const requestedTab =
+    (searchParams.get("tab") as SabhaTabs) || "upcoming-sabha";
+  // Fall back to a tab the user can actually access.
+  const activeTab: SabhaTabs =
+    requestedTab === "completed-sabha"
+      ? canCompleted
+        ? "completed-sabha"
+        : "upcoming-sabha"
+      : canUpcoming
+        ? "upcoming-sabha"
+        : "completed-sabha";
 
   // --------------------------
   // FETCH SABHA DATA
@@ -86,11 +105,22 @@ export default function Sabha() {
         className="w-full h-full flex flex-col justify-start"
       >
         <TabsList className="w-full bg-primaryColor rounded-none justify-evenly h-10 pb-2">
-          <TabsTrigger value="upcoming-sabha">Upcoming Sabha</TabsTrigger>
-          <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
+          {canUpcoming && (
+            <TabsTrigger value="upcoming-sabha">Upcoming Sabha</TabsTrigger>
+          )}
+          {canCompleted && (
+            <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
+          )}
         </TabsList>
 
+        {myLoaded && !canUpcoming && !canCompleted && (
+          <div className="mt-10 text-center text-textLightColor">
+            You don&apos;t have access to any sabha view.
+          </div>
+        )}
+
         {/* UPCOMING SABHA */}
+        {canUpcoming && (
         <TabsContent value="upcoming-sabha" className="h-full w-full p-4">
           {sabhaLoading ? (
             <LoadingSpinner />
@@ -120,8 +150,10 @@ export default function Sabha() {
             />
           )}
         </TabsContent>
+        )}
 
         {/* COMPLETED SABHA */}
+        {canCompleted && (
         <TabsContent value="completed-sabha" className="p-4 w-full h-full">
           {sabhaLoading ? (
             <LoadingSpinner />
@@ -150,6 +182,7 @@ export default function Sabha() {
             />
           )}
         </TabsContent>
+        )}
       </Tabs>
 
       <SabhaFormDialog />

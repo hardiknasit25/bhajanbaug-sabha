@@ -10,6 +10,7 @@ import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
 import MemberQrDialog from "~/components/shared-component/MemberQrDialog";
+import Can from "~/components/shared-component/Can";
 import { useMembers } from "~/hooks/useMembers";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
@@ -80,10 +81,12 @@ function MemberDetails() {
               size={18}
               onClick={() => navigate(`/members/report/${memberId}`)}
             />
-            <Edit
-              size={18}
-              onClick={() => navigate(`/members/update-member`)}
-            />
+            <Can module="user" action="update">
+              <Edit
+                size={18}
+                onClick={() => navigate(`/members/update-member`)}
+              />
+            </Can>
           </div>
         ),
       }}
