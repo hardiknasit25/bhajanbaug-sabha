@@ -9,6 +9,7 @@ import {
 import LayoutWrapper from "~/components/shared-component/LayoutWrapper";
 import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberDetailInfo from "~/components/shared-component/MemberDetailInfo";
+import MemberQrDialog from "~/components/shared-component/MemberQrDialog";
 import { useMembers } from "~/hooks/useMembers";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
@@ -63,6 +64,18 @@ function MemberDetails() {
         iconName: "ArrowLeft",
         children: (
           <div className="flex justify-center items-center gap-4 pr-2">
+            <MemberQrDialog
+              memberId={Number(memberId)}
+              memberName={
+                selectedMember
+                  ? `${selectedMember.first_name ?? ""} ${
+                      selectedMember.middle_name ?? ""
+                    } ${selectedMember.last_name ?? ""}`
+                  : undefined
+              }
+              smkNo={selectedMember?.smk_no}
+              mobile={selectedMember?.mobile}
+            />
             <ChartColumn
               size={18}
               onClick={() => navigate(`/members/report/${memberId}`)}

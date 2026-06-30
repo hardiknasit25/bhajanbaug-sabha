@@ -13,8 +13,8 @@ import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useMembers } from "~/hooks/useMembers";
-import { memberService } from "~/services/memberService";
 import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
+import { memberQrCardBlob } from "~/utils/memberQrCard";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 
 export function meta({}: MetaArgs) {
@@ -88,8 +88,8 @@ export default function Members() {
     setSearchText(value);
   };
 
-  // Download a SEPARATE QR PDF for each member of a poshak group (one file per
-  // member, not a single combined PDF). groupId is null for the "Others" bucket.
+  // Download a SEPARATE QR card image (PNG) for each member of a poshak group
+  // (one file per member). groupId is null for the "Others" bucket.
   const handleGroupQrDownload = async (
     groupId: number | null,
     leaderName: string,
@@ -104,7 +104,9 @@ export default function Members() {
     setQrProgress({ current: 0, total: users.length, label: leaderName });
     for (let i = 0; i < users.length; i++) {
       const u = users[i];
-      const memberName = `${u.first_name ?? ""} ${u.last_name ?? ""}`
+      const memberName = `${u.first_name ?? ""} ${u.middle_name ?? ""} ${
+        u.last_name ?? ""
+      }`
         .replace(/\s+/g, " ")
         .trim();
       setQrProgress({
@@ -113,8 +115,13 @@ export default function Members() {
         label: memberName || `Member #${u.id}`,
       });
       try {
-        const blob = await memberService.downloadQrCode(u.id);
-        downloadBlob(blob, `qr_${safeFileName(memberName, `member_${u.id}`)}.pdf`);
+        const blob = await memberQrCardBlob({
+          memberId: u.id,
+          name: memberName,
+          smk: u.smk_no,
+          mobile: u.mobile,
+        });
+        downloadBlob(blob, `qr_${safeFileName(memberName, `member_${u.id}`)}.png`);
       } catch (error) {
         console.error(`Failed to download QR for member ${u.id}`, error);
       }

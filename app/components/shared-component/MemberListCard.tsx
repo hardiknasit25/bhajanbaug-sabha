@@ -1,5 +1,6 @@
-import { ChartColumn, Check, Percent, QrCode, X } from "lucide-react";
-import { useState } from "react";
+import { ChartColumn, Check, X } from "lucide-react";
+import { useRef } from "react";
+import MemberQrDialog from "./MemberQrDialog";
 import type { MemberData } from "~/types/members.interface";
 import ImageComponent from "./ImageComponent";
 import { useNavigate } from "react-router";
@@ -10,8 +11,6 @@ import { doMemberPresent, doMemberAbsent } from "~/store/slice/sabhaSlice";
 import type { SabhaData } from "~/types/sabha.interface";
 import { localJsonStorageService } from "~/lib/localStorage";
 import { ABSENT_MEMBER, PRESENT_MEMBER } from "~/constant/constant";
-import { memberService } from "~/services/memberService";
-import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
 
 function MemberListCard({
   member,
@@ -26,27 +25,7 @@ function MemberListCard({
 }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [qrBusy, setQrBusy] = useState(false);
-
-  // Download this member's QR card (PDF). Stops propagation so the card's
-  // navigate-to-details click doesn't fire.
-  const handleDownloadQr = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (qrBusy) return;
-    setQrBusy(true);
-    try {
-      const blob = await memberService.downloadQrCode(member.id);
-      const name = safeFileName(
-        `${member.first_name ?? ""} ${member.last_name ?? ""}`,
-        `member_${member.id}`,
-      );
-      downloadBlob(blob, `qr_${name}.pdf`);
-    } catch (err) {
-      console.error("Failed to download member QR", err);
-    } finally {
-      setQrBusy(false);
-    }
-  };
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const handlePresentClick = (id: number) => {
     // Dispatch directly so each card does NOT subscribe to the whole sabha slice.
@@ -59,11 +38,17 @@ function MemberListCard({
 
   return (
     <div
+      ref={cardRef}
       className={cn(
         "relative flex justify-center gap-2 p-2 pl-4 transition-all",
         from === "members" ? "items-center" : "items-start",
       )}
-      onClick={() => {
+      onClick={(e) => {
+        // The QR preview dialog is portaled to <body>, but its clicks still
+        // bubble through the React tree to this handler. Ignore any click whose
+        // target isn't actually inside this card (close / download / overlay),
+        // otherwise closing the dialog would navigate to the details page.
+        if (!cardRef.current?.contains(e.target as Node)) return;
         if (from === "attendance") return;
         else if (from === "report") navigate(`/members/report/${member.id}`);
         else navigate(`/members/details/${member.id}`);
@@ -176,17 +161,18 @@ function MemberListCard({
         )}
       </div>
 
-      {/* Per-member QR download (members list / poshak-group list). */}
+      {/* Per-member QR preview + download (members list / poshak-group list). */}
       {from === "members" && (
-        <button
-          type="button"
-          onClick={handleDownloadQr}
-          disabled={qrBusy}
-          aria-label="Download member QR code"
-          className="shrink-0 self-center rounded-full p-2 text-primaryColor hover:bg-gray-100 disabled:opacity-50"
-        >
-          <QrCode size={20} />
-        </button>
+        <MemberQrDialog
+          memberId={member.id}
+          memberName={`${member.first_name ?? ""} ${member.middle_name ?? ""} ${
+            member.last_name ?? ""
+          }`}
+          smkNo={member.smk_no}
+          mobile={member.mobile}
+          iconSize={20}
+          className="shrink-0 self-center rounded-full p-2 text-primaryColor hover:bg-gray-100"
+        />
       )}
       <Separator
         orientation="vertical"
