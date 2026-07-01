@@ -74,6 +74,21 @@ export const fetchMembersByPoshakGroups = createAsyncThunk(
   }
 );
 
+//#region delete member
+export const deleteMember = createAsyncThunk(
+  "members/deleteMember",
+  async (memberId: number, { rejectWithValue }) => {
+    try {
+      await memberService.deleteMember(memberId);
+      return memberId;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 //#region create member
 export const createMember = createAsyncThunk(
   "members/createMember",
@@ -260,6 +275,19 @@ const memberSlice = createSlice({
       })
       .addCase(updateMember.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    //#region delete member
+    builder
+      .addCase(deleteMember.fulfilled, (state, action) => {
+        state.members = state.members.filter((m) => m.id !== action.payload);
+        state.totalMembers = Math.max(0, state.totalMembers - 1);
+        if (state.selectedMember?.id === action.payload) {
+          state.selectedMember = null;
+        }
+      })
+      .addCase(deleteMember.rejected, (state, action) => {
         state.error = action.payload as string;
       });
 

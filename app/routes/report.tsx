@@ -30,6 +30,7 @@ import {
 } from "~/components/ui/popover";
 import { useReport } from "~/hooks/useReport";
 import { useSabha } from "~/hooks/useSabha";
+import { useMyPermissions } from "~/hooks/usePermissions";
 import axiosInstance from "~/interceptor/interceptor";
 import { sabhaService } from "~/services/sabhaService";
 import type { filterType } from "~/services/reportService";
@@ -95,6 +96,18 @@ export default function Report() {
     setSabhaList,
     fetchSabhaList,
   } = useSabha();
+
+  // Gate each report sub-tab by its module (permissive until perms load).
+  const { can, myLoaded } = useMyPermissions();
+  const canAll = !myLoaded || can("all_members", "read");
+  const canGroup = !myLoaded || can("poshak_group", "read");
+  const canCompleted = !myLoaded || can("completed_sabha", "read");
+  const resolveTab = (t: ReportTabs): ReportTabs => {
+    if (t === "all-members" && canAll) return t;
+    if (t === "by-group" && canGroup) return t;
+    if (t === "completed-sabha" && canCompleted) return t;
+    return canAll ? "all-members" : canGroup ? "by-group" : "completed-sabha";
+  };
 
   // Helper to update searchParams
   const updateParam = (key: string, value: string) => {
@@ -288,7 +301,9 @@ export default function Report() {
 
   // Sync with URL and call API
   useEffect(() => {
-    const urlTab = (searchParams.get("tab") as ReportTabs) || "all-members";
+    const urlTab = resolveTab(
+      (searchParams.get("tab") as ReportTabs) || "all-members",
+    );
     const urlFilter = (searchParams.get("filter") as filterType) || "lastSabha";
 
     setActiveTab(urlTab);
@@ -303,7 +318,8 @@ export default function Report() {
     } else if (urlTab === "completed-sabha") {
       fetchSabhaList("completed");
     }
-  }, [searchParams, appliedSabhaIds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, appliedSabhaIds, myLoaded]);
 
   return (
     <LayoutWrapper
@@ -494,12 +510,23 @@ export default function Report() {
         className="w-full h-full flex flex-col justify-start"
       >
         <TabsList className="w-full flex justify-between items-center bg-primaryColor rounded-none h-10 pb-2">
-          <TabsTrigger value="all-members">All Members</TabsTrigger>
-          <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
-          <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
+          {canAll && <TabsTrigger value="all-members">All Members</TabsTrigger>}
+          {canGroup && (
+            <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
+          )}
+          {canCompleted && (
+            <TabsTrigger value="completed-sabha">Completed Sabha</TabsTrigger>
+          )}
         </TabsList>
 
+        {myLoaded && !canAll && !canGroup && !canCompleted && (
+          <div className="mt-10 text-center text-textLightColor">
+            You don&apos;t have access to any report view.
+          </div>
+        )}
+
         {/* ALL MEMBERS */}
+        {canAll && (
         <TabsContent value="all-members" className="h-full w-full">
           {loading ? (
             <LoadingSpinner />
@@ -528,8 +555,10 @@ export default function Report() {
             />
           )}
         </TabsContent>
+        )}
 
         {/* GROUP TAB */}
+        {canGroup && (
         <TabsContent value="by-group" className="h-full w-full overflow-y-auto">
           {loading ? (
             <LoadingSpinner />
@@ -543,8 +572,10 @@ export default function Report() {
             />
           )}
         </TabsContent>
+        )}
 
         {/* COMPLETED SABHA */}
+        {canCompleted && (
         <TabsContent value="completed-sabha" className="p-4 w-full h-full">
           {sabhaLoading ? (
             <LoadingSpinner />
@@ -565,6 +596,7 @@ export default function Report() {
             />
           )}
         </TabsContent>
+        )}
       </Tabs>
     </LayoutWrapper>
   );

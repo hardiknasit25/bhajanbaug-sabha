@@ -13,6 +13,7 @@ import LoadingSpinner from "~/components/shared-component/LoadingSpinner";
 import MemberListCard from "~/components/shared-component/MemberListCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useMembers } from "~/hooks/useMembers";
+import { useMyPermissions } from "~/hooks/usePermissions";
 import { downloadBlob, safeFileName } from "~/utils/downloadBlob";
 import { memberQrCardBlob } from "~/utils/memberQrCard";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
@@ -48,10 +49,26 @@ export default function Members() {
   } = useMembers();
 
   // --------------------------
+  // PERMISSIONS (gate each sub-tab by its module)
+  // --------------------------
+  const { can, myLoaded } = useMyPermissions();
+  const canAllMembers = !myLoaded || can("all_members", "read");
+  const canByGroup = !myLoaded || can("poshak_group", "read");
+
+  // --------------------------
   // SEARCH PARAMS
   // --------------------------
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get("tab") as MemberTabs) || "all-members";
+  const requestedTab = (searchParams.get("tab") as MemberTabs) || "all-members";
+  // Fall back to a tab the user can access.
+  const activeTab: MemberTabs =
+    requestedTab === "by-group"
+      ? canByGroup
+        ? "by-group"
+        : "all-members"
+      : canAllMembers
+        ? "all-members"
+        : "by-group";
 
   // Progress for the per-group "separate QR codes" download (one PDF per member).
   const [qrProgress, setQrProgress] = useState<{
@@ -151,11 +168,22 @@ export default function Members() {
         className="w-full h-full flex flex-col justify-start"
       >
         <TabsList className="w-full bg-primaryColor rounded-none justify-evenly h-10 pb-2">
-          <TabsTrigger value="all-members">All Members</TabsTrigger>
-          <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
+          {canAllMembers && (
+            <TabsTrigger value="all-members">All Members</TabsTrigger>
+          )}
+          {canByGroup && (
+            <TabsTrigger value="by-group">Poshak Groups</TabsTrigger>
+          )}
         </TabsList>
 
+        {myLoaded && !canAllMembers && !canByGroup && (
+          <div className="mt-10 text-center text-textLightColor">
+            You don&apos;t have access to any members view.
+          </div>
+        )}
+
         {/* All Members */}
+        {canAllMembers && (
         <TabsContent value="all-members" className="h-full w-full">
           {loading ? (
             <LoadingSpinner />
@@ -186,8 +214,10 @@ export default function Members() {
             />
           )}
         </TabsContent>
+        )}
 
         {/* Poshak Group */}
+        {canByGroup && (
         <TabsContent value="by-group" className="h-full w-full overflow-hidden">
           {/* Separate-QR download progress */}
           {qrProgress && (
@@ -226,6 +256,7 @@ export default function Members() {
             />
           )}
         </TabsContent>
+        )}
       </Tabs>
     </LayoutWrapper>
   );

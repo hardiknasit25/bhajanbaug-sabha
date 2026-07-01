@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   createMember,
+  deleteMember,
   enterSabhaReason,
   fetchGroupSelect,
   fetchMemberById,
@@ -38,6 +39,7 @@ export const useMembers = () => {
       dispatch(createMember(memberData)),
     updateMember: (memberId: number, memberData: MemberPayload) =>
       dispatch(updateMember({ memberId, memberData })),
+    deleteMember: (memberId: number) => dispatch(deleteMember(memberId)),
     enterSabhaReason: (sabha_id: number, user_id: number, reason: string) =>
       dispatch(enterSabhaReason({ sabha_id, user_id, reason })),
     fetchGroupSelect: () => dispatch(fetchGroupSelect()),

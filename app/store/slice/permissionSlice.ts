@@ -59,9 +59,12 @@ export const fetchRolePermissions = createAsyncThunk(
 //#region change a single module permission
 export const changePermission = createAsyncThunk(
   "permissions/changePermission",
-  async (payload: ChangePermissionPayload, { rejectWithValue }) => {
+  async (payload: ChangePermissionPayload, { rejectWithValue, dispatch }) => {
     try {
       const response = await permissionService.changePermission(payload);
+      // Refresh the logged-in user's own permission map so gating (tabs,
+      // buttons, sub-tabs) reflects the change instantly — no page refresh.
+      dispatch(fetchMyPermissions());
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || error.message);
@@ -72,9 +75,11 @@ export const changePermission = createAsyncThunk(
 //#region apply a permission type to every module
 export const changeAllPermissions = createAsyncThunk(
   "permissions/changeAllPermissions",
-  async (payload: ChangeAllPermissionPayload, { rejectWithValue }) => {
+  async (payload: ChangeAllPermissionPayload, { rejectWithValue, dispatch }) => {
     try {
       const response = await permissionService.changeAllPermissions(payload);
+      // Keep the current user's gating in sync immediately.
+      dispatch(fetchMyPermissions());
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || error.message);

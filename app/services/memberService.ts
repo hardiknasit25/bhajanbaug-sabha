@@ -64,6 +64,18 @@ export const memberService = {
     }
   },
 
+  //#region delete member
+  deleteMember: async (memberId: number) => {
+    try {
+      const response = await axiosInstance.delete(
+        `${API_ENDPOINTS.MEMBERS.BASE}/${memberId}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   //#region fetch members by group
   getPoshakGroup: async (params: CommonParams) => {
     try {

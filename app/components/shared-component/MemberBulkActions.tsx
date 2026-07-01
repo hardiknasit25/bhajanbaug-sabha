@@ -45,8 +45,8 @@ function triggerDownload(blob: Blob, filename: string) {
 }
 
 function MemberBulkActions({ onImported }: { onImported?: () => void }) {
-  // Gate member management actions by the "user" module permission.
-  const { canRead, canCreate } = usePermission("user");
+  // Gate member management actions by the "member" module permission.
+  const { canRead, canCreate } = usePermission("member");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState<

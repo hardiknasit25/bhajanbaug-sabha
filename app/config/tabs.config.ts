@@ -12,6 +12,7 @@ export const tabsConfig: TabItem[] = [
     path: "/",
     show: true,
     moduleKey: "home",
+    strict: true,
   },
   {
     id: "sabha",
@@ -30,8 +31,9 @@ export const tabsConfig: TabItem[] = [
     icon: UsersRound,
     path: "/members",
     show: true,
-    // The members data is governed by the existing "user" module on the backend.
-    moduleKey: "user",
+    // Members are governed by the "member" module (CRUD + list access).
+    moduleKey: "member",
+    strict: true,
   },
   {
     id: "report",
@@ -40,5 +42,6 @@ export const tabsConfig: TabItem[] = [
     path: "/report",
     show: true,
     moduleKey: "report",
+    strict: true,
   },
 ];

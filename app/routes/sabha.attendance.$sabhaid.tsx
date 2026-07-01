@@ -43,6 +43,11 @@ import { useMembers } from "~/hooks/useMembers";
 import { useSabha } from "~/hooks/useSabha";
 import { localJsonStorageService } from "~/lib/localStorage";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
+import {
+  playErrorBuzzer,
+  playSuccessBeep,
+  primeAudio,
+} from "~/utils/sound";
 
 export function meta({}: MetaArgs) {
   return [
@@ -128,10 +133,18 @@ export default function EventAttendance() {
   // Guards against firing multiple present requests while one is in flight.
   const scanBusyRef = useRef(false);
 
+  // Set the scan result and play matching audio feedback: a short beep on
+  // success, a buzzer on failure.
+  const report = (result: { ok: boolean; message: string }) => {
+    setScanResult(result);
+    if (result.ok) playSuccessBeep();
+    else playErrorBuzzer();
+  };
+
   const handleQrDecoded = async (decodedText: string) => {
     const text = (decodedText || "").trim();
     if (!text.startsWith(MEMBER_QR_PREFIX)) {
-      setScanResult({
+      report({
         ok: false,
         message: "Unrecognized QR code. Please scan a member QR.",
       });
@@ -139,7 +152,7 @@ export default function EventAttendance() {
     }
     const memberId = Number(text.slice(MEMBER_QR_PREFIX.length));
     if (!memberId || Number.isNaN(memberId)) {
-      setScanResult({ ok: false, message: "Invalid member QR code." });
+      report({ ok: false, message: "Invalid member QR code." });
       return;
     }
     if (scanBusyRef.current) return;
@@ -152,9 +165,9 @@ export default function EventAttendance() {
             .replace(/\s+/g, " ")
             .trim()
         : `Member #${memberId}`;
-      setScanResult({ ok: true, message: `${name} is present` });
+      report({ ok: true, message: `${name} is present` });
     } catch {
-      setScanResult({
+      report({
         ok: false,
         message: "Could not mark present. Please try again.",
       });
@@ -164,6 +177,8 @@ export default function EventAttendance() {
   };
 
   const openScanner = () => {
+    // Unlock audio within this user gesture so scan-triggered tones can play.
+    primeAudio();
     setScanResult(null);
     setScanOpen(true);
   };
