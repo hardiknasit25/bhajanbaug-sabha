@@ -3,6 +3,23 @@
 // SSR) and self-unlocking on a user gesture via primeAudio().
 
 let audioCtx: AudioContext | null = null;
+let successAudio: HTMLAudioElement | null = null;
+
+// Public URL of the success sound (lives in /public).
+const SUCCESS_SOUND_URL = "/attendance_success.mp3";
+
+function getSuccessAudio(): HTMLAudioElement | null {
+  if (typeof window === "undefined") return null;
+  try {
+    if (!successAudio) {
+      successAudio = new Audio(SUCCESS_SOUND_URL);
+      successAudio.preload = "auto";
+    }
+    return successAudio;
+  } catch {
+    return null;
+  }
+}
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -29,6 +46,7 @@ function getCtx(): AudioContext | null {
  */
 export function primeAudio() {
   getCtx();
+  getSuccessAudio(); // create + start preloading the success clip
 }
 
 function tone(
@@ -53,13 +71,34 @@ function tone(
   osc.stop(startAt + duration + 0.02);
 }
 
-/** Pleasant short two-note "ding" for a successful scan. */
+/** Pleasant short two-note "ding" — used as a fallback if the mp3 can't play. */
 export function playSuccessBeep() {
   const ctx = getCtx();
   if (!ctx) return;
   const now = ctx.currentTime;
   tone(ctx, 880, now, 0.12, "sine", 0.2); // A5
   tone(ctx, 1174.66, now + 0.1, 0.16, "sine", 0.2); // D6
+}
+
+/**
+ * Success feedback for a scan — plays /attendance_success.mp3, falling back to
+ * a generated beep if the clip is blocked or missing.
+ */
+export function playSuccessSound() {
+  const audio = getSuccessAudio();
+  if (!audio) {
+    playSuccessBeep();
+    return;
+  }
+  try {
+    audio.currentTime = 0;
+    const played = audio.play();
+    if (played && typeof played.catch === "function") {
+      played.catch(() => playSuccessBeep());
+    }
+  } catch {
+    playSuccessBeep();
+  }
 }
 
 /** Harsh low buzzer for a failed / invalid scan. */

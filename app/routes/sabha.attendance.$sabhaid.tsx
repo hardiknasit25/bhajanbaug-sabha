@@ -38,6 +38,7 @@ import {
   ABSENT_MEMBER,
   MEMBER_QR_PREFIX,
   PRESENT_MEMBER,
+  SCAN_RESULT_VISIBLE_SECONDS,
 } from "~/constant/constant";
 import { useMembers } from "~/hooks/useMembers";
 import { useSabha } from "~/hooks/useSabha";
@@ -45,7 +46,7 @@ import { localJsonStorageService } from "~/lib/localStorage";
 import { getTokenFromRequest } from "~/utils/getTokenFromRequest";
 import {
   playErrorBuzzer,
-  playSuccessBeep,
+  playSuccessSound,
   primeAudio,
 } from "~/utils/sound";
 
@@ -132,13 +133,35 @@ export default function EventAttendance() {
   } | null>(null);
   // Guards against firing multiple present requests while one is in flight.
   const scanBusyRef = useRef(false);
+  // Timer that auto-hides a successful scan result (the member's name).
+  const scanResultTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Set the scan result and play matching audio feedback: a short beep on
-  // success, a buzzer on failure.
+  // Clear any pending auto-hide timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (scanResultTimerRef.current) clearTimeout(scanResultTimerRef.current);
+    };
+  }, []);
+
+  // Set the scan result and play matching audio feedback: the success sound on
+  // success, a buzzer on failure. On success the result (member name) auto-hides
+  // after SCAN_RESULT_VISIBLE_SECONDS.
   const report = (result: { ok: boolean; message: string }) => {
+    // Cancel a previous auto-hide before showing the new result.
+    if (scanResultTimerRef.current) {
+      clearTimeout(scanResultTimerRef.current);
+      scanResultTimerRef.current = null;
+    }
     setScanResult(result);
-    if (result.ok) playSuccessBeep();
-    else playErrorBuzzer();
+    if (result.ok) {
+      playSuccessSound();
+      scanResultTimerRef.current = setTimeout(() => {
+        setScanResult(null);
+        scanResultTimerRef.current = null;
+      }, SCAN_RESULT_VISIBLE_SECONDS * 1000);
+    } else {
+      playErrorBuzzer();
+    }
   };
 
   const handleQrDecoded = async (decodedText: string) => {
