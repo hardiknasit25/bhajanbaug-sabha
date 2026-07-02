@@ -524,7 +524,8 @@ export default function Report() {
         }}
         className="w-full h-full flex flex-col justify-start"
       >
-        <TabsList className="w-full flex justify-between items-center bg-primaryColor rounded-none h-10 pb-2">
+        {/* Scrollable on mobile: tabs keep their natural width and scroll instead of squishing. */}
+        <TabsList className="w-full flex justify-start sm:justify-between items-center bg-primaryColor rounded-none h-10 pb-2 overflow-x-auto scrollbar-none [&>button]:shrink-0">
           {canAll && <TabsTrigger value="all-members">All Members</TabsTrigger>}
           {canGroup &&
             POSHAK_GROUP_TYPES.map((t) => (
